@@ -12,7 +12,6 @@ export async function POST(request: Request) {
 
     if (error) throw error
 
-    // Update last_check_in on the plan
     await supabaseAdmin
       .from('inheritance_plans')
       .update({ last_check_in: new Date().toISOString() })
