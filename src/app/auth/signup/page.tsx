@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { useState, useMemo } from 'react'
+import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
 
 export default function SignupPage() {
@@ -9,6 +9,14 @@ export default function SignupPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  // Create client inside component to avoid build-time initialization issues
+  const supabase = useMemo(() => {
+    return createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+    )
+  }, [])
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()

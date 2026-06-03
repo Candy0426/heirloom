@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { useEffect, useState, useMemo } from 'react'
+import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
 
 interface VaultSummary {
@@ -24,16 +24,21 @@ export default function DashboardPage() {
   const [plans, setPlans] = useState<PlanSummary[]>([])
   const [user, setUser] = useState<any>(null)
 
+  const supabase = useMemo(() => {
+    return createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+    )
+  }, [])
+
   useEffect(() => {
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { window.location.href = '/auth/login'; return }
       setUser(user)
-      // Fetch vaults and plans
-      // TODO: Replace with real queries
     }
     checkUser()
-  }, [])
+  }, [supabase])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
