@@ -48,13 +48,13 @@ export async function decrypt(ciphertext: string, key: CryptoKey): Promise<strin
 }
 
 // Derive key from password using PBKDF2
-export async function deriveKeyFromPassword(password: string, salt: Uint8Array): Promise<CryptoKey> {
+export async function deriveKeyFromPassword(password: string, salt: ArrayBuffer): Promise<CryptoKey> {
   const encoder = new TextEncoder()
   const keyMaterial = await crypto.subtle.importKey(
     'raw', encoder.encode(password), 'PBKDF2', false, ['deriveKey']
   )
   return crypto.subtle.deriveKey(
-    { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+    { name: 'PBKDF2', salt: new Uint8Array(salt) as any, iterations: 100000, hash: 'SHA-256' },
     keyMaterial,
     { name: ALGO, length: KEY_LENGTH },
     true,
@@ -63,7 +63,7 @@ export async function deriveKeyFromPassword(password: string, salt: Uint8Array):
 }
 
 // Shamir's Secret Sharing — using secrets.js library
-import secrets from 'secrets.js'
+const secrets: any = require('secrets.js')
 
 export function splitSecret(secretHex: string, shares: number, threshold: number): string[] {
   return secrets.share(secretHex, shares, threshold)

@@ -4,7 +4,7 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Heirloom — Secure Digital Inheritance',
-  description: 'Protect your family's future. Time-locked, zero-knowledge inheritance vault for couples.',
+  description: "Protect your family's future. Time-locked, zero-knowledge inheritance vault for couples.",
 }
 
 export default function RootLayout({

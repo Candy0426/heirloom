@@ -52,7 +52,7 @@ export default function LandingPage() {
             {[
               { step: '1', title: 'Create your vault', desc: 'Add your bank accounts, crypto wallets, insurance policies, and any documents. Everything is encrypted in your browser.' },
               { step: '2', title: 'Set up your plan', desc: 'Choose your partner and how long to wait before they get access. We use time-locked cryptography.' },
-              { step: '3', title: 'Check in weekly', desc: 'A simple click every week confirms you're OK. If you don't check in, your partner gets the key automatically.' },
+              { step: '3', title: 'Check in weekly', desc: "A simple click every week confirms you're OK. If you don't check in, your partner gets the key automatically." },
             ].map(s => (
               <div key={s.step} className="bg-stone-900 rounded-xl p-6 border border-stone-800">
                 <div className="w-10 h-10 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold mb-4">{s.step}</div>
