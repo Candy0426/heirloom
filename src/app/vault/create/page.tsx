@@ -305,9 +305,43 @@ export default function CreateVaultPage() {
               </div>
               <button 
                 onClick={() => {
-                  if (vaultKey) navigator.clipboard.writeText(vaultKey)
+                  if (!vaultKey) return
+                  
+                  const copyToClipboard = async () => {
+                    try {
+                      // Try modern clipboard API first
+                      if (navigator.clipboard && window.isSecureContext) {
+                        await navigator.clipboard.writeText(vaultKey)
+                        alert('✅ Key copied to clipboard!')
+                        return
+                      }
+                      
+                      // Fallback for older browsers / non-HTTPS
+                      const textArea = document.createElement('textarea')
+                      textArea.value = vaultKey
+                      textArea.style.position = 'fixed'
+                      textArea.style.left = '-9999px'
+                      document.body.appendChild(textArea)
+                      textArea.focus()
+                      textArea.select()
+                      
+                      const success = document.execCommand('copy')
+                      document.body.removeChild(textArea)
+                      
+                      if (success) {
+                        alert('✅ Key copied to clipboard!')
+                      } else {
+                        alert('❌ Could not copy. Please select and copy the key manually.')
+                      }
+                    } catch (err) {
+                      console.error('Copy failed:', err)
+                      alert('❌ Copy failed. Please select and copy the key manually.')
+                    }
+                  }
+                  
+                  copyToClipboard()
                 }}
-                className="mt-2 text-xs text-amber-400 hover:text-amber-300"
+                className="mt-2 text-xs text-amber-400 hover:text-amber-300 flex items-center gap-1"
               >
                 📋 Copy to clipboard
               </button>
