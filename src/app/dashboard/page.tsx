@@ -47,57 +47,57 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-stone-950">
-      <nav className="flex items-center justify-between px-6 py-4 border-b border-stone-800">
+      <nav className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-stone-800">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-stone-950 font-bold">H</div>
           <span className="text-lg font-semibold text-stone-100">Heirloom</span>
         </div>
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-stone-400">{user?.email}</span>
-          <button onClick={handleLogout} className="text-sm text-stone-400 hover:text-stone-200">Log out</button>
+        <div className="flex items-center gap-2 sm:gap-4">
+          <span className="text-xs sm:text-sm text-stone-400 truncate max-w-[120px] sm:max-w-[200px]">{user?.email}</span>
+          <button onClick={handleLogout} className="text-xs sm:text-sm text-stone-400 hover:text-stone-200 px-2 py-1 rounded hover:bg-stone-800">Log out</button>
         </div>
       </nav>
 
-      <main className="max-w-4xl mx-auto px-6 py-12">
-        <h1 className="text-3xl font-bold text-stone-100 mb-8">Your vaults</h1>
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        <h1 className="text-2xl sm:text-3xl font-bold text-stone-100 mb-6 sm:mb-8">Your vaults</h1>
 
         {vaults.length === 0 ? (
-          <div className="bg-stone-900 rounded-xl p-8 border border-stone-800 text-center">
+          <div className="bg-stone-900 rounded-xl p-6 sm:p-8 border border-stone-800 text-center">
             <p className="text-stone-400 mb-4">You haven't created a vault yet.</p>
-            <Link href="/vault/create" className="inline-block px-6 py-3 rounded-lg bg-amber-500 text-stone-950 font-semibold hover:bg-amber-400">
+            <Link href="/vault/create" className="inline-block px-5 sm:px-6 py-3 rounded-lg bg-amber-500 text-stone-950 font-semibold hover:bg-amber-400 text-sm sm:text-base">
               Create your first vault
             </Link>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {vaults.map(v => (
-              <div key={v.id} className="bg-stone-900 rounded-xl p-6 border border-stone-800 flex items-center justify-between">
-                <div>
-                  <h3 className="font-semibold text-stone-100">{v.name}</h3>
+              <div key={v.id} className="bg-stone-900 rounded-xl p-4 sm:p-6 border border-stone-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-semibold text-stone-100 truncate">{v.name}</h3>
                   <p className="text-sm text-stone-500">{v.asset_count} assets · Created {new Date(v.created_at).toLocaleDateString()}</p>
                 </div>
-                <Link href={`/vault/${v.id}`} className="px-4 py-2 rounded-lg bg-stone-800 text-stone-300 hover:bg-stone-700">Open</Link>
+                <Link href={`/vault/${v.id}`} className="px-4 py-2 rounded-lg bg-stone-800 text-stone-300 hover:bg-stone-700 text-sm whitespace-nowrap">Open</Link>
               </div>
             ))}
           </div>
         )}
 
-        <div className="mt-12">
-          <h2 className="text-2xl font-bold text-stone-100 mb-4">Inheritance plans</h2>
+        <div className="mt-8 sm:mt-12">
+          <h2 className="text-xl sm:text-2xl font-bold text-stone-100 mb-4">Inheritance plans</h2>
           {plans.length === 0 ? (
-            <div className="bg-stone-900 rounded-xl p-6 border border-stone-800">
+            <div className="bg-stone-900 rounded-xl p-5 sm:p-6 border border-stone-800">
               <p className="text-stone-400 mb-4">Protect your vault with a time-locked inheritance plan.</p>
-              <Link href="/inheritance/create" className="text-amber-400 hover:text-amber-300 font-semibold">Set up plan →</Link>
+              <Link href="/inheritance/create" className="text-amber-400 hover:text-amber-300 font-semibold text-sm">Set up plan →</Link>
             </div>
           ) : (
             plans.map(p => (
-              <div key={p.id} className="bg-stone-900 rounded-xl p-6 border border-stone-800">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold text-stone-100">Beneficiary: {p.beneficiary_email}</p>
+              <div key={p.id} className="bg-stone-900 rounded-xl p-4 sm:p-6 border border-stone-800">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-stone-100 text-sm">Beneficiary: {p.beneficiary_email}</p>
                     <p className="text-sm text-stone-500">Wait: {p.wait_days} days · Status: <span className="text-emerald-500">{p.status}</span></p>
                   </div>
-                  <button className="px-4 py-2 rounded-lg bg-emerald-500/20 text-emerald-400 text-sm font-semibold">
+                  <button className="px-4 py-2 rounded-lg bg-emerald-500/20 text-emerald-400 text-sm font-semibold whitespace-nowrap">
                     Check in now
                   </button>
                 </div>

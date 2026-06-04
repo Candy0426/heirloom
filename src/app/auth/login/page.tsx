@@ -28,11 +28,11 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-stone-950 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-stone-950 flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
+        <div className="text-center mb-6 sm:mb-8">
           <div className="w-10 h-10 rounded-lg bg-amber-500 flex items-center justify-center text-stone-950 font-bold text-xl mx-auto mb-4">H</div>
-          <h1 className="text-2xl font-bold text-stone-100">Welcome back</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-stone-100">Welcome back</h1>
         </div>
         <form onSubmit={handleLogin} className="space-y-4">
           <input
@@ -41,7 +41,7 @@ export default function LoginPage() {
             onChange={e => setEmail(e.target.value)}
             placeholder="Email"
             required
-            className="w-full px-4 py-3 rounded-lg bg-stone-900 border border-stone-800 text-stone-100 placeholder:text-stone-500 focus:outline-none focus:border-amber-500"
+            className="w-full px-4 py-3 rounded-lg bg-stone-900 border border-stone-800 text-stone-100 placeholder:text-stone-500 focus:outline-none focus:border-amber-500 text-base min-h-[48px]"
           />
           <input
             type="password"
@@ -49,13 +49,13 @@ export default function LoginPage() {
             onChange={e => setPassword(e.target.value)}
             placeholder="Password"
             required
-            className="w-full px-4 py-3 rounded-lg bg-stone-900 border border-stone-800 text-stone-100 placeholder:text-stone-500 focus:outline-none focus:border-amber-500"
+            className="w-full px-4 py-3 rounded-lg bg-stone-900 border border-stone-800 text-stone-100 placeholder:text-stone-500 focus:outline-none focus:border-amber-500 text-base min-h-[48px]"
           />
           {error && <p className="text-rose-500 text-sm">{error}</p>}
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-lg bg-amber-500 text-stone-950 font-semibold hover:bg-amber-400 disabled:opacity-50"
+            className="w-full py-3 rounded-lg bg-amber-500 text-stone-950 font-semibold hover:bg-amber-400 disabled:opacity-50 min-h-[48px] text-base"
           >
             {loading ? 'Signing in...' : 'Sign in'}
           </button>

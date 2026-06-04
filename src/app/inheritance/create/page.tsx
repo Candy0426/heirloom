@@ -15,18 +15,18 @@ export default function CreateInheritancePage() {
 
   return (
     <div className="min-h-screen bg-stone-950">
-      <nav className="px-6 py-4 border-b border-stone-800">
+      <nav className="px-4 sm:px-6 py-4 border-b border-stone-800">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-stone-950 font-bold">H</div>
           <span className="text-lg font-semibold text-stone-100">Heirloom</span>
         </div>
       </nav>
 
-      <main className="max-w-2xl mx-auto px-6 py-12">
+      <main className="max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         {step === 1 ? (
           <div className="space-y-6">
-            <h1 className="text-2xl font-bold text-stone-100">Set up inheritance</h1>
-            <p className="text-stone-400">If you don't check in for {waitDays} days, your partner will automatically receive access to your vault.</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-stone-100">Set up inheritance</h1>
+            <p className="text-stone-400 text-sm">If you don't check in for {waitDays} days, your partner will automatically receive access to your vault.</p>
 
             <div className="space-y-4">
               <div>
@@ -35,7 +35,7 @@ export default function CreateInheritancePage() {
                   value={beneficiaryName}
                   onChange={e => setBeneficiaryName(e.target.value)}
                   placeholder="e.g. Maria Papadopoulou"
-                  className="w-full px-4 py-3 rounded-lg bg-stone-900 border border-stone-800 text-stone-100"
+                  className="w-full px-4 py-3 rounded-lg bg-stone-900 border border-stone-800 text-stone-100 text-base min-h-[48px]"
                 />
               </div>
 
@@ -46,7 +46,7 @@ export default function CreateInheritancePage() {
                   value={beneficiaryEmail}
                   onChange={e => setBeneficiaryEmail(e.target.value)}
                   placeholder="maria@email.com"
-                  className="w-full px-4 py-3 rounded-lg bg-stone-900 border border-stone-800 text-stone-100"
+                  className="w-full px-4 py-3 rounded-lg bg-stone-900 border border-stone-800 text-stone-100 text-base min-h-[48px]"
                 />
               </div>
 
@@ -55,7 +55,7 @@ export default function CreateInheritancePage() {
                 <select
                   value={waitDays}
                   onChange={e => setWaitDays(Number(e.target.value))}
-                  className="w-full px-4 py-3 rounded-lg bg-stone-900 border border-stone-800 text-stone-100"
+                  className="w-full px-4 py-3 rounded-lg bg-stone-900 border border-stone-800 text-stone-100 text-base min-h-[48px]"
                 >
                   <option value={30}>30 days</option>
                   <option value={60}>60 days</option>
@@ -68,23 +68,23 @@ export default function CreateInheritancePage() {
               🔐 Using Shamir's Secret Sharing: We hold one part of the key, your partner holds the other. Only together can they unlock your vault.
             </div>
 
-            <button onClick={handleSetup} className="w-full py-3 rounded-lg bg-amber-500 text-stone-950 font-semibold">
+            <button onClick={handleSetup} className="w-full py-3 rounded-lg bg-amber-500 text-stone-950 font-semibold min-h-[48px] text-base">
               Activate inheritance plan
             </button>
           </div>
         ) : (
           <div className="text-center space-y-4">
-            <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto">
+            <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto text-2xl">
               ✅
             </div>
-            <h1 className="text-2xl font-bold text-stone-100">Plan activated!</h1>
-            <p className="text-stone-400">
+            <h1 className="text-xl sm:text-2xl font-bold text-stone-100">Plan activated!</h1>
+            <p className="text-stone-400 text-sm sm:text-base">
               Your partner will receive an email with instructions if you don't check in for {waitDays} days.
             </p>
             <p className="text-stone-500 text-sm">
               Reminder: Check in weekly to keep your plan active.
             </p>
-            <a href="/dashboard" className="inline-block px-6 py-3 rounded-lg bg-stone-800 text-stone-300">
+            <a href="/dashboard" className="inline-block px-5 sm:px-6 py-3 rounded-lg bg-stone-800 text-stone-300 min-h-[48px] text-base">
               Go to dashboard
             </a>
           </div>
