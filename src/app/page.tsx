@@ -158,8 +158,18 @@ export default function LandingPage() {
         </section>
       </main>
 
-      <footer className="border-t border-stone-800 py-6 sm:py-8 text-center text-sm text-stone-500 px-4">
-        © 2026 Heirloom. Built with 🔒 in Europe.
+      <footer className="border-t border-stone-800 py-6 sm:py-8 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-sm text-stone-500">
+              © 2026 Heirloom. Built with 🔒 in Europe.
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 text-sm text-center">
+              <a href="/legal/privacy" className="text-stone-400 hover:text-stone-200">Privacy Policy</a>
+              <a href="/legal/terms" className="text-stone-400 hover:text-stone-200">Terms of Service</a>
+            </div>
+          </div>
+        </div>
       </footer>
     </div>
   )
