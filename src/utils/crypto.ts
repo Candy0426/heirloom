@@ -78,3 +78,61 @@ export function generateRandomHex(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(32))
   return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('')
 }
+
+// Encrypt file (ArrayBuffer) with a password-derived key
+export async function encryptFile(fileData: ArrayBuffer, password: string): Promise<ArrayBuffer> {
+  const salt = crypto.getRandomValues(new Uint8Array(16))
+  const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH))
+  
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey']
+  )
+  
+  const key = await crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+    keyMaterial,
+    { name: ALGO, length: KEY_LENGTH },
+    false,
+    ['encrypt']
+  )
+  
+  const encrypted = await crypto.subtle.encrypt(
+    { name: ALGO, iv },
+    key,
+    fileData
+  )
+  
+  // Combine salt + iv + encrypted data
+  const combined = new Uint8Array(salt.length + iv.length + encrypted.byteLength)
+  combined.set(salt)
+  combined.set(iv, salt.length)
+  combined.set(new Uint8Array(encrypted), salt.length + iv.length)
+  
+  return combined.buffer
+}
+
+// Decrypt file (ArrayBuffer) with password
+export async function decryptFile(encryptedData: ArrayBuffer, password: string): Promise<ArrayBuffer> {
+  const data = new Uint8Array(encryptedData)
+  const salt = data.slice(0, 16)
+  const iv = data.slice(16, 16 + IV_LENGTH)
+  const ciphertext = data.slice(16 + IV_LENGTH)
+  
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey']
+  )
+  
+  const key = await crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+    keyMaterial,
+    { name: ALGO, length: KEY_LENGTH },
+    false,
+    ['decrypt']
+  )
+  
+  return crypto.subtle.decrypt(
+    { name: ALGO, iv },
+    key,
+    ciphertext
+  )
+}
