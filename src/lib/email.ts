@@ -1,6 +1,6 @@
 // Email service using Resend API
 const RESEND_API_KEY = process.env.RESEND_API_KEY || ''
-const FROM_EMAIL = 'Heirloom <noreply@heirloom-secure.com>'
+const FROM_EMAIL = 'Heirloom <onboarding@resend.dev>'
 
 interface EmailData {
   to: string
