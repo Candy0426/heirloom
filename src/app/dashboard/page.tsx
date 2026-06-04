@@ -40,6 +40,52 @@ export default function DashboardPage() {
     checkUser()
   }, [supabase])
 
+  // Fetch vaults
+  useEffect(() => {
+    const fetchVaults = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { data, error } = await supabase
+        .from('vaults')
+        .select('id, name, asset_count, created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        console.error('Error fetching vaults:', error)
+        return
+      }
+
+      setVaults(data || [])
+    }
+
+    fetchVaults()
+  }, [supabase])
+
+  // Fetch inheritance plans
+  useEffect(() => {
+    const fetchPlans = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { data, error } = await supabase
+        .from('inheritance_plans')
+        .select('id, beneficiary_email, beneficiary_name, wait_days, status, last_check_in')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        console.error('Error fetching plans:', error)
+        return
+      }
+
+      setPlans(data || [])
+    }
+
+    fetchPlans()
+  }, [supabase])
+
   const handleLogout = async () => {
     await supabase.auth.signOut()
     window.location.href = '/'

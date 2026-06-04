@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { createClient } from '@supabase/supabase-js'
 
 interface AssetInput {
   type: string
@@ -12,11 +12,58 @@ interface AssetInput {
   notes: string
 }
 
+// Simple client-side encryption using Web Crypto API
+async function encryptData(data: any, password: string): Promise<{ encrypted: string; salt: string }> {
+  const encoder = new TextEncoder()
+  const salt = crypto.getRandomValues(new Uint8Array(16))
+  
+  // Derive key from password
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw', encoder.encode(password), 'PBKDF2', false, ['deriveBits', 'deriveKey']
+  )
+  
+  const key = await crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+    keyMaterial,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt']
+  )
+  
+  // Generate IV
+  const iv = crypto.getRandomValues(new Uint8Array(12))
+  
+  // Encrypt
+  const encrypted = await crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv },
+    key,
+    encoder.encode(JSON.stringify(data))
+  )
+  
+  // Combine salt + iv + ciphertext
+  const combined = new Uint8Array(salt.length + iv.length + encrypted.byteLength)
+  combined.set(salt, 0)
+  combined.set(iv, salt.length)
+  combined.set(new Uint8Array(encrypted), salt.length + iv.length)
+  
+  return {
+    encrypted: btoa(String.fromCharCode(...combined)),
+    salt: btoa(String.fromCharCode(...salt))
+  }
+}
+
 export default function CreateVaultPage() {
   const [name, setName] = useState('My Vault')
   const [assets, setAssets] = useState<AssetInput[]>([{ type: 'bank', name: '', institution: '', account_number: '', balance: '', notes: '' }])
-  const [encryptionKey, setEncryptionKey] = useState('')
   const [step, setStep] = useState(1)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState(false)
+
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+  )
 
   const addAsset = () => {
     setAssets([...assets, { type: 'bank', name: '', institution: '', account_number: '', balance: '', notes: '' }])
@@ -29,11 +76,54 @@ export default function CreateVaultPage() {
   }
 
   const handleCreate = async () => {
-    // TODO: Generate key, encrypt, upload to Supabase
-    setStep(3)
-    setTimeout(() => {
-      window.location.href = '/dashboard'
-    }, 2000)
+    setLoading(true)
+    setError('')
+    
+    try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        setError('Please sign in to create a vault')
+        setLoading(false)
+        return
+      }
+
+      // Generate encryption key (user must remember this!)
+      const keyBytes = crypto.getRandomValues(new Uint8Array(32))
+      const encryptionKey = btoa(String.fromCharCode(...keyBytes))
+      
+      // Encrypt assets
+      const { encrypted, salt } = await encryptData({ assets }, encryptionKey)
+      
+      // Save to Supabase
+      const { error: dbError } = await supabase
+        .from('vaults')
+        .insert({
+          user_id: user.id,
+          name,
+          encrypted_data: { encrypted, salt },
+          asset_count: assets.filter(a => a.name.trim()).length
+        })
+
+      if (dbError) {
+        throw dbError
+      }
+
+      setSuccess(true)
+      setStep(3)
+      
+      // Store key in sessionStorage for this session (user must save it!)
+      sessionStorage.setItem('heirloom_vault_key', encryptionKey)
+      
+    } catch (err: any) {
+      setError(err.message || 'Failed to create vault')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleGoToDashboard = () => {
+    window.location.href = '/dashboard'
   }
 
   return (
@@ -135,10 +225,39 @@ export default function CreateVaultPage() {
               🔒
             </div>
             <h1 className="text-xl sm:text-2xl font-bold text-stone-100">Vault encrypted!</h1>
+            
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 text-left max-w-md mx-auto">
+              <p className="text-amber-200 text-sm font-semibold mb-2">⚠️ Important: Save this key!</p>
+              <p className="text-stone-400 text-sm mb-3">
+                We cannot recover your vault if you lose this key. Save it in a password manager or write it down.
+              </p>
+              <div className="bg-stone-900 rounded-lg p-3 font-mono text-xs text-stone-300 break-all">
+                {sessionStorage.getItem('heirloom_vault_key') || 'Key generated'}
+              </div>
+              <button 
+                onClick={() => {
+                  const key = sessionStorage.getItem('heirloom_vault_key')
+                  if (key) navigator.clipboard.writeText(key)
+                }}
+                className="mt-2 text-xs text-amber-400 hover:text-amber-300"
+              >
+                📋 Copy to clipboard
+              </button>
+            </div>
+            
             <p className="text-stone-400 text-sm sm:text-base">Your assets are now stored securely. Next, set up your inheritance plan.</p>
-            <a href="/inheritance/create" className="inline-block px-5 sm:px-6 py-3 rounded-lg bg-amber-500 text-stone-950 font-semibold min-h-[48px] text-base">
-              Set up inheritance →
-            </a>
+            
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <a href="/inheritance/create" className="inline-block px-5 sm:px-6 py-3 rounded-lg bg-amber-500 text-stone-950 font-semibold min-h-[48px] text-base">
+                Set up inheritance →
+              </a>
+              <button 
+                onClick={handleGoToDashboard}
+                className="px-5 sm:px-6 py-3 rounded-lg bg-stone-800 text-stone-300 min-h-[48px] text-base"
+              >
+                Go to dashboard
+              </button>
+            </div>
           </div>
         )}
       </main>

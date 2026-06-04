@@ -1,16 +1,100 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { createClient } from '@supabase/supabase-js'
 
 export default function CreateInheritancePage() {
   const [beneficiaryEmail, setBeneficiaryEmail] = useState('')
   const [beneficiaryName, setBeneficiaryName] = useState('')
   const [waitDays, setWaitDays] = useState(30)
   const [step, setStep] = useState(1)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [vaultId, setVaultId] = useState('')
+
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+  )
+
+  // Fetch the most recent vault for this user
+  useEffect(() => {
+    const fetchVault = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { data, error } = await supabase
+        .from('vaults')
+        .select('id')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single()
+
+      if (data) {
+        setVaultId(data.id)
+      }
+    }
+    fetchVault()
+  }, [])
 
   const handleSetup = async () => {
-    // TODO: Generate shares, encrypt, save to DB
-    setStep(2)
+    setLoading(true)
+    setError('')
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        setError('Please sign in to create an inheritance plan')
+        setLoading(false)
+        return
+      }
+
+      if (!beneficiaryEmail) {
+        setError('Please enter your partner\'s email')
+        setLoading(false)
+        return
+      }
+
+      // Create the inheritance plan
+      const { error: dbError } = await supabase
+        .from('inheritance_plans')
+        .insert({
+          user_id: user.id,
+          vault_id: vaultId || null,
+          beneficiary_email: beneficiaryEmail,
+          beneficiary_name: beneficiaryName,
+          wait_days: waitDays,
+          status: 'active',
+          last_check_in: new Date().toISOString()
+        })
+
+      if (dbError) {
+        throw dbError
+      }
+
+      setStep(2)
+
+      // Optionally send welcome email
+      try {
+        await fetch('/api/email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'welcome',
+            to: beneficiaryEmail,
+            data: { name: beneficiaryName || 'Partner' }
+          })
+        })
+      } catch (e) {
+        console.log('Email send failed (expected in dev):', e)
+      }
+      
+    } catch (err: any) {
+      setError(err.message || 'Failed to create plan')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -68,9 +152,17 @@ export default function CreateInheritancePage() {
               🔐 Using Shamir's Secret Sharing: We hold one part of the key, your partner holds the other. Only together can they unlock your vault.
             </div>
 
-            <button onClick={handleSetup} className="w-full py-3 rounded-lg bg-amber-500 text-stone-950 font-semibold min-h-[48px] text-base">
-              Activate inheritance plan
+            <button 
+              onClick={handleSetup} 
+              disabled={loading}
+              className="w-full py-3 rounded-lg bg-amber-500 text-stone-950 font-semibold min-h-[48px] text-base disabled:opacity-50"
+            >
+              {loading ? 'Activating...' : 'Activate inheritance plan'}
             </button>
+            
+            {error && (
+              <p className="text-rose-500 text-sm text-center">{error}</p>
+            )}
           </div>
         ) : (
           <div className="text-center space-y-4">
