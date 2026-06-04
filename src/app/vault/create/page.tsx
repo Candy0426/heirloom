@@ -294,7 +294,7 @@ export default function CreateVaultPage() {
               <p className="text-stone-400 text-sm mb-3">
                 We cannot recover your vault if you lose this key. Save it in a password manager or write it down.
               </p>
-              <div className="bg-stone-900 rounded-lg p-3 font-mono text-xs text-stone-300 break-all">
+              <div id="vault-key-display" data-key={vaultKey} className="bg-stone-900 rounded-lg p-3 font-mono text-xs text-stone-300 break-all">
                 {vaultKey || 'Key generated'}
               </div>
               <div 
@@ -303,21 +303,26 @@ export default function CreateVaultPage() {
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
-                  if (!vaultKey) {
-                    alert('No key available yet')
+                  
+                  // Get key from DOM attribute (most reliable)
+                  const keyFromDOM = document.getElementById('vault-key-display')?.getAttribute('data-key')
+                  const key = keyFromDOM || vaultKey
+                  
+                  if (!key || key === 'Key generated') {
+                    alert('No key available yet. Key from DOM: ' + (keyFromDOM || 'null') + ', Key from state: ' + (vaultKey || 'null'))
                     return
                   }
                   
                   const copyToClipboard = async () => {
                     try {
                       if (navigator.clipboard && window.isSecureContext) {
-                        await navigator.clipboard.writeText(vaultKey)
+                        await navigator.clipboard.writeText(key)
                         alert('✅ Key copied!')
                         return
                       }
                       
                       const textArea = document.createElement('textarea')
-                      textArea.value = vaultKey
+                      textArea.value = key
                       textArea.style.position = 'fixed'
                       textArea.style.left = '-9999px'
                       document.body.appendChild(textArea)
