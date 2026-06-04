@@ -1,6 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+import { motion } from 'framer-motion'
+import { Shield, Clock, Key, ChevronRight, Lock, Fingerprint, Timer, Mail, ArrowRight } from 'lucide-react'
+import { FadeIn, ScaleIn, StaggerContainer, StaggerItem, HoverCard, AnimatedGradient, FloatingParticles } from '@/components/animations'
 
 function MobileNav() {
   const [open, setOpen] = useState(false)
@@ -55,41 +58,134 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-24">
-        <div className="text-center mb-12 sm:mb-16">
-          <h1 className="text-3xl sm:text-5xl font-bold text-stone-100 mb-4 sm:mb-6 leading-tight">
-            What if something happens to you?
-          </h1>
-          <p className="text-lg sm:text-xl text-stone-400 max-w-2xl mx-auto mb-6 sm:mb-8">
-            Heirloom is a zero-knowledge vault that protects your family's future. 
-            If something happens, your partner gets access — automatically, securely.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-            <a href="/auth/signup" className="px-6 py-3 rounded-lg bg-amber-500 text-stone-950 font-semibold hover:bg-amber-400 text-center">
-              Get started — Free
-            </a>
-            <a href="#how" className="px-6 py-3 rounded-lg border border-stone-700 text-stone-300 hover:bg-stone-800 text-center">
-              Learn more
-            </a>
+      <div className="relative">
+        <AnimatedGradient />
+        <FloatingParticles />
+        
+        <main className="relative max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-24">
+          <div className="text-center mb-12 sm:mb-16">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, ease: 'easeOut' }}
+              className="mb-8"
+            >
+              <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-6 relative">
+                <motion.div
+                  animate={{ rotate: [0, 5, -5, 0] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                >
+                  <img src="/logo.svg" alt="Heirloom" className="w-full h-full rounded-2xl shadow-2xl shadow-amber-500/20" />
+                </motion.div>
+                <motion.div
+                  className="absolute -inset-2 rounded-2xl bg-amber-500/20 blur-xl"
+                  animate={{ opacity: [0.2, 0.4, 0.2] }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                />
+              </div>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-stone-900/80 border border-stone-700/50 text-sm text-stone-400 mb-6">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                Launching 2026
+              </div>
+            </motion.div>
+            
+            <motion.h1 
+              className="text-3xl sm:text-5xl lg:text-6xl font-bold text-stone-100 mb-4 sm:mb-6 leading-tight"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.2 }}
+            >
+              What if something happens{' '}
+              <span className="text-amber-500">to you?</span>
+            </motion.h1>
+            <motion.p 
+              className="text-lg sm:text-xl text-stone-400 max-w-2xl mx-auto mb-6 sm:mb-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.4 }}
+            >
+              Heirloom is a zero-knowledge vault that protects your family's future. 
+              If something happens, your partner gets access — automatically, securely.
+            </motion.p>
+            <motion.div 
+              className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.6 }}
+            >
+              <motion.a 
+                href="/auth/signup" 
+                className="group inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-amber-500 text-stone-950 font-semibold hover:bg-amber-400 text-center text-lg shadow-lg shadow-amber-500/25"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                Get started — Free
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </motion.a>
+              <motion.a 
+                href="#how" 
+                className="inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl border border-stone-700 text-stone-300 hover:bg-stone-800 text-center"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                Learn more
+                <ChevronRight className="w-5 h-5" />
+              </motion.a>
+            </motion.div>
+
+            {/* Trust badges */}
+            <motion.div
+              className="mt-10 sm:mt-12 flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-sm text-stone-500"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1 }}
+            >
+              <span className="flex items-center gap-1.5"><Lock className="w-4 h-4" /> AES-256</span>
+              <span className="flex items-center gap-1.5"><Fingerprint className="w-4 h-4" /> Zero-knowledge</span>
+              <span className="flex items-center gap-1.5"><Timer className="w-4 h-4" /> Time-locked</span>
+            </motion.div>
           </div>
-        </div>
 
         {/* How it works */}
         <section id="how" className="py-12 sm:py-16 border-t border-stone-800">
-          <h2 className="text-2xl sm:text-3xl font-bold text-stone-100 text-center mb-8 sm:mb-12">How it works</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+          <FadeIn>
+            <h2 className="text-2xl sm:text-3xl font-bold text-stone-100 text-center mb-8 sm:mb-12">How it works</h2>
+          </FadeIn>
+          <StaggerContainer staggerDelay={0.15} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {[
-              { step: '1', title: 'Create your vault', desc: 'Add your bank accounts, crypto wallets, insurance policies, and any documents. Everything is encrypted in your browser.' },
-              { step: '2', title: 'Set up your plan', desc: 'Choose your partner and how long to wait before they get access. We use time-locked cryptography.' },
-              { step: '3', title: 'Check in weekly', desc: "A simple click every week confirms you're OK. If you don't check in, your partner gets the key automatically." },
+              { 
+                icon: Shield, 
+                step: '1', 
+                title: 'Create your vault', 
+                desc: 'Add your bank accounts, crypto wallets, insurance policies, and any documents. Everything is encrypted in your browser.' 
+              },
+              { 
+                icon: Key, 
+                step: '2', 
+                title: 'Set up your plan', 
+                desc: 'Choose your partner and how long to wait before they get access. We use time-locked cryptography.' 
+              },
+              { 
+                icon: Clock, 
+                step: '3', 
+                title: 'Check in weekly', 
+                desc: "A simple click every week confirms you're OK. If you don't check in, your partner gets the key automatically." 
+              },
             ].map(s => (
-              <div key={s.step} className="bg-stone-900 rounded-xl p-5 sm:p-6 border border-stone-800">
-                <div className="w-10 h-10 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold mb-4">{s.step}</div>
-                <h3 className="text-lg font-semibold text-stone-100 mb-2">{s.title}</h3>
-                <p className="text-stone-400 text-sm">{s.desc}</p>
-              </div>
+              <StaggerItem key={s.step}>
+                <HoverCard>
+                  <div className="bg-stone-900 rounded-xl p-5 sm:p-6 border border-stone-800 hover:border-amber-500/30 transition-colors h-full">
+                    <div className="w-12 h-12 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center mb-4">
+                      <s.icon className="w-6 h-6" />
+                    </div>
+                    <div className="text-xs font-bold text-amber-500 mb-2">STEP {s.step}</div>
+                    <h3 className="text-lg font-semibold text-stone-100 mb-2">{s.title}</h3>
+                    <p className="text-stone-400 text-sm leading-relaxed">{s.desc}</p>
+                  </div>
+                </HoverCard>
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerContainer>
         </section>
 
         {/* Security */}
@@ -157,6 +253,7 @@ export default function LandingPage() {
           </div>
         </section>
       </main>
+      </div> {/** closes the relative wrapper for hero background */}
 
       <footer className="border-t border-stone-800 py-6 sm:py-8 px-4">
         <div className="max-w-6xl mx-auto">
