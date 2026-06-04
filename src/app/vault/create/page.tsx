@@ -297,20 +297,25 @@ export default function CreateVaultPage() {
               <div className="bg-stone-900 rounded-lg p-3 font-mono text-xs text-stone-300 break-all">
                 {vaultKey || 'Key generated'}
               </div>
-              <button 
-                onClick={() => {
-                  if (!vaultKey) return
+              <div 
+                role="button"
+                tabIndex={0}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  if (!vaultKey) {
+                    alert('No key available yet')
+                    return
+                  }
                   
                   const copyToClipboard = async () => {
                     try {
-                      // Try modern clipboard API first
                       if (navigator.clipboard && window.isSecureContext) {
                         await navigator.clipboard.writeText(vaultKey)
-                        alert('✅ Key copied to clipboard!')
+                        alert('✅ Key copied!')
                         return
                       }
                       
-                      // Fallback for older browsers / non-HTTPS
                       const textArea = document.createElement('textarea')
                       textArea.value = vaultKey
                       textArea.style.position = 'fixed'
@@ -323,22 +328,28 @@ export default function CreateVaultPage() {
                       document.body.removeChild(textArea)
                       
                       if (success) {
-                        alert('✅ Key copied to clipboard!')
+                        alert('✅ Key copied!')
                       } else {
-                        alert('❌ Could not copy. Please select and copy the key manually.')
+                        alert('❌ Copy failed. Please select the key above and press Ctrl+C/Cmd+C')
                       }
                     } catch (err) {
                       console.error('Copy failed:', err)
-                      alert('❌ Copy failed. Please select and copy the key manually.')
+                      alert('❌ Copy failed. Please select the key above and press Ctrl+C/Cmd+C')
                     }
                   }
                   
                   copyToClipboard()
                 }}
-                className="mt-2 text-xs text-amber-400 hover:text-amber-300 flex items-center gap-1"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    e.currentTarget.click()
+                  }
+                }}
+                className="mt-2 text-xs text-amber-400 hover:text-amber-300 flex items-center gap-1 cursor-pointer select-none"
               >
                 📋 Copy to clipboard
-              </button>
+              </div>
             </div>
             
             <p className="text-stone-400 text-sm sm:text-base">Your assets are now stored securely. Next, set up your inheritance plan.</p>
