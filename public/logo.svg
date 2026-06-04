@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Background -->
+  <rect width="512" height="512" rx="96" fill="#292524"/>
+  
+  <!-- Shield shape -->
+  <path d="M256 80 
+           L380 120 
+           L380 240 
+           Q380 340 256 400 
+           Q132 340 132 240 
+           L132 120 Z" 
+        fill="#d97706"/>
+  
+  <!-- Inner shield (darker) -->
+  <path d="M256 100 
+           L360 135 
+           L360 235 
+           Q360 320 256 375 
+           Q152 320 152 235 
+           L152 135 Z" 
+        fill="#1c1917"/>
+  
+  <!-- Key hole symbol -->
+  <circle cx="256" cy="210" r="35" fill="#d97706"/>
+  <path d="M256 240 L256 320 L275 320 L275 240 Z" fill="#d97706"/>
+  <path d="M237 320 L275 320 L275 340 L237 340 Z" fill="#d97706"/>
+  
+  <!-- Lock mechanism detail -->
+  <rect x="246" y="185" width="20" height="15" rx="3" fill="#1c1917"/>
+  
+  <!-- Clock arc (time element) -->
+  <path d="M200 160 A 70 70 0 0 1 312 160" 
+        stroke="#d97706" stroke-width="4" fill="none" stroke-linecap="round"/>
+  
+  <!-- Clock hands -->
+  <line x1="256" y1="160" x2="256" y2="130" stroke="#d97706" stroke-width="4" stroke-linecap="round"/>
+  <line x1="256" y1="160" x2="280" y2="175" stroke="#d97706" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- Bottom letter H (subtle) -->
+  <text x="256" y="470" font-family="system-ui, -apple-system, sans-serif" font-size="28" 
+        font-weight="700" fill="#78716c" text-anchor="middle" letter-spacing="4">HEIRLOOM</text>
+</svg>

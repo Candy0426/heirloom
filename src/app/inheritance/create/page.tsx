@@ -17,7 +17,7 @@ export default function CreateInheritancePage() {
     <div className="min-h-screen bg-stone-950">
       <nav className="px-4 sm:px-6 py-4 border-b border-stone-800">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-stone-950 font-bold">H</div>
+          <img src="/logo.svg" alt="Heirloom" className="w-8 h-8 rounded-lg" />
           <span className="text-lg font-semibold text-stone-100">Heirloom</span>
         </div>
       </nav>

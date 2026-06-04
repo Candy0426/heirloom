@@ -31,7 +31,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-stone-950 flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-sm">
         <div className="text-center mb-6 sm:mb-8">
-          <div className="w-10 h-10 rounded-lg bg-amber-500 flex items-center justify-center text-stone-950 font-bold text-xl mx-auto mb-4">H</div>
+          <img src="/logo.svg" alt="Heirloom" className="w-10 h-10 rounded-lg mx-auto mb-4" />
           <h1 className="text-xl sm:text-2xl font-bold text-stone-100">Welcome back</h1>
         </div>
         <form onSubmit={handleLogin} className="space-y-4">

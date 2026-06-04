@@ -40,7 +40,7 @@ export default function LandingPage() {
       {/* Mobile-First Navbar */}
       <nav className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-stone-800">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-stone-950 font-bold text-lg">H</div>
+          <img src="/logo.svg" alt="Heirloom" className="w-8 h-8 rounded-lg" />
           <span className="text-xl font-semibold text-stone-100">Heirloom</span>
         </div>
         {/* Mobile: hamburger menu */}
