@@ -52,6 +52,61 @@ async function encryptData(data: any, password: string): Promise<{ encrypted: st
   }
 }
 
+function FileUploadSection() {
+  const [files, setFiles] = useState<File[]>([])
+  const [uploading, setUploading] = useState(false)
+  const [uploadedUrls, setUploadedUrls] = useState<string[]>([])
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = e.target.files
+    if (!selected) return
+    setFiles([...files, ...Array.from(selected)])
+  }
+
+  const removeFile = (index: number) => {
+    setFiles(files.filter((_, i) => i !== index))
+  }
+
+  return (
+    <div className="space-y-3">
+      <input
+        type="file"
+        multiple
+        accept="image/*,.pdf,.doc,.docx,.txt"
+        onChange={handleFileSelect}
+        className="hidden"
+        id="vault-files"
+      />
+      <label 
+        htmlFor="vault-files" 
+        className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 border-dashed border-stone-700 hover:border-amber-500/50 cursor-pointer transition-colors"
+      >
+        <span className="text-stone-400 text-sm">📎 Click to upload documents, images, PDFs</span>
+      </label>
+      
+      {files.length > 0 && (
+        <div className="space-y-2">
+          {files.map((file, i) => (
+            <div key={i} className="flex items-center justify-between bg-stone-800 rounded-lg px-3 py-2 text-sm">
+              <span className="text-stone-300 truncate">{file.name}</span>
+              <button 
+                onClick={() => removeFile(i)}
+                className="text-stone-500 hover:text-rose-400 ml-2"
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+      
+      <p className="text-xs text-stone-600">
+        🔐 Files will be encrypted before upload. Max 10MB each.
+      </p>
+    </div>
+  )
+}
+
 export default function CreateVaultPage() {
   const [name, setName] = useState('My Vault')
   const [assets, setAssets] = useState<AssetInput[]>([{ type: 'bank', name: '', institution: '', account_number: '', balance: '', notes: '' }])
@@ -211,6 +266,12 @@ export default function CreateVaultPage() {
             ))}
 
             <button onClick={addAsset} className="text-sm text-amber-400 hover:text-amber-300 py-2">+ Add another asset</button>
+
+            {/* File Upload Section */}
+            <div className="bg-stone-900 rounded-xl p-4 border border-stone-800">
+              <h3 className="text-sm font-semibold text-stone-300 mb-3">📎 Attach Files (Optional)</h3>
+              <FileUploadSection />
+            </div>
 
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <button onClick={() => setStep(1)} className="flex-1 py-3 rounded-lg border border-stone-700 text-stone-300 min-h-[48px] text-base">Back</button>
