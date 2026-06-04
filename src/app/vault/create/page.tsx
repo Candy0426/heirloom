@@ -116,13 +116,6 @@ export default function CreateVaultPage() {
   const [success, setSuccess] = useState(false)
   const [vaultKey, setVaultKey] = useState('')
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const key = sessionStorage.getItem('heirloom_vault_key')
-      if (key) setVaultKey(key)
-    }
-  }, [success])
-
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL || '',
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
@@ -175,7 +168,8 @@ export default function CreateVaultPage() {
       setSuccess(true)
       setStep(3)
       
-      // Store key in sessionStorage for this session (user must save it!)
+      // Store key directly in state AND sessionStorage
+      setVaultKey(encryptionKey)
       sessionStorage.setItem('heirloom_vault_key', encryptionKey)
       
     } catch (err: any) {
