@@ -302,66 +302,38 @@ export default function CreateVaultPage() {
               <p className="text-stone-400 text-sm mb-3">
                 We cannot recover your vault if you lose this key. Save it in a password manager or write it down.
               </p>
-              <div id="vault-key-display" data-key={vaultKey} className="bg-stone-900 rounded-lg p-3 font-mono text-xs text-stone-300 break-all">
+              <div id="vault-key-display" className="bg-stone-900 rounded-lg p-3 font-mono text-xs text-stone-300 break-all">
                 {vaultKey || 'Key generated'}
               </div>
-              <div 
-                role="button"
-                tabIndex={0}
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  
-                  // Read key directly from sessionStorage (most reliable)
-                  const key = sessionStorage.getItem('heirloom_vault_key')
-                  
-                  if (!key || key === 'Key generated') {
-                    alert('No key found in storage. Please create a new vault.')
-                    return
-                  }
-                  
-                  const copyToClipboard = async () => {
-                    try {
-                      if (navigator.clipboard && window.isSecureContext) {
-                        await navigator.clipboard.writeText(key)
-                        alert('✅ Key copied!')
+              
+              {vaultKey && (
+                <div className="mt-2 text-xs text-stone-400">
+                  <div className="flex items-center gap-1 text-amber-400 mb-1 cursor-pointer select-none" 
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => {
+                      const key = sessionStorage.getItem('heirloom_vault_key')
+                      if (!key) {
+                        alert('No key in storage. Check console for errors.')
                         return
                       }
-                      
-                      const textArea = document.createElement('textarea')
-                      textArea.value = key
-                      textArea.style.position = 'fixed'
-                      textArea.style.left = '-9999px'
-                      document.body.appendChild(textArea)
-                      textArea.focus()
-                      textArea.select()
-                      
-                      const success = document.execCommand('copy')
-                      document.body.removeChild(textArea)
-                      
-                      if (success) {
-                        alert('✅ Key copied!')
-                      } else {
-                        alert('❌ Copy failed. Please select the key above and press Ctrl+C/Cmd+C')
-                      }
-                    } catch (err) {
-                      console.error('Copy failed:', err)
-                      alert('❌ Copy failed. Please select the key above and press Ctrl+C/Cmd+C')
-                    }
-                  }
-                  
-                  copyToClipboard()
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    e.currentTarget.click()
-                  }
-                }}
-                className="mt-2 text-xs text-amber-400 hover:text-amber-300 flex items-center gap-1 cursor-pointer select-none"
-              >
-                📋 Copy to clipboard
-              </div>
+                      navigator.clipboard?.writeText(key).then(() => alert('Copied!')).catch(() => {
+                        // fallback
+                        const ta = document.createElement('textarea')
+                        ta.value = key
+                        document.body.appendChild(ta)
+                        ta.select()
+                        document.execCommand('copy')
+                        document.body.removeChild(ta)
+                        alert('Copied!')
+                      })
+                    }}
+                  >
+                    📋 Copy to clipboard
+                  </div>
+                  <p className="text-stone-500 text-xs">If copy doesn’t work, select the key above and press Ctrl+C/Cmd+C</p>
+                </div>
+              )}
             </div>
             
             <p className="text-stone-400 text-sm sm:text-base">Your assets are now stored securely. Next, set up your inheritance plan.</p>
