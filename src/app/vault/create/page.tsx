@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
 
 interface AssetInput {
@@ -114,6 +114,14 @@ export default function CreateVaultPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const [vaultKey, setVaultKey] = useState('')
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const key = sessionStorage.getItem('heirloom_vault_key')
+      if (key) setVaultKey(key)
+    }
+  }, [success])
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL || '',
@@ -293,12 +301,11 @@ export default function CreateVaultPage() {
                 We cannot recover your vault if you lose this key. Save it in a password manager or write it down.
               </p>
               <div className="bg-stone-900 rounded-lg p-3 font-mono text-xs text-stone-300 break-all">
-                {sessionStorage.getItem('heirloom_vault_key') || 'Key generated'}
+                {vaultKey || 'Key generated'}
               </div>
               <button 
                 onClick={() => {
-                  const key = sessionStorage.getItem('heirloom_vault_key')
-                  if (key) navigator.clipboard.writeText(key)
+                  if (vaultKey) navigator.clipboard.writeText(vaultKey)
                 }}
                 className="mt-2 text-xs text-amber-400 hover:text-amber-300"
               >
