@@ -116,6 +116,14 @@ export default function CreateVaultPage() {
   const [success, setSuccess] = useState(false)
   const [vaultKey, setVaultKey] = useState('')
 
+  // Restore key from sessionStorage on mount (for page refreshes)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const key = sessionStorage.getItem('heirloom_vault_key')
+      if (key) setVaultKey(key)
+    }
+  }, [])
+
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL || '',
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
@@ -304,12 +312,11 @@ export default function CreateVaultPage() {
                   e.preventDefault()
                   e.stopPropagation()
                   
-                  // Get key from DOM attribute (most reliable)
-                  const keyFromDOM = document.getElementById('vault-key-display')?.getAttribute('data-key')
-                  const key = keyFromDOM || vaultKey
+                  // Read key directly from sessionStorage (most reliable)
+                  const key = sessionStorage.getItem('heirloom_vault_key')
                   
                   if (!key || key === 'Key generated') {
-                    alert('No key available yet. Key from DOM: ' + (keyFromDOM || 'null') + ', Key from state: ' + (vaultKey || 'null'))
+                    alert('No key found in storage. Please create a new vault.')
                     return
                   }
                   
