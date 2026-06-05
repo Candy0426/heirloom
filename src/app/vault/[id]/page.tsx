@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useParams } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
 
@@ -45,7 +46,10 @@ async function decryptData(encryptedData: { encrypted: string; salt: string }, k
   }
 }
 
-export default function VaultPage({ params }: { params: { id: string } }) {
+export default function VaultPage() {
+  const params = useParams()
+  const vaultId = params?.id as string
+  
   const [vault, setVault] = useState<Vault | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -70,28 +74,38 @@ export default function VaultPage({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     const fetchVault = async () => {
+      if (!vaultId) {
+        setError('No vault ID provided')
+        setLoading(false)
+        return
+      }
+      
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
+
+      console.log('Fetching vault:', vaultId)
 
       const { data, error } = await supabase
         .from('vaults')
         .select('*')
-        .eq('id', params.id)
+        .eq('id', vaultId)
         .eq('user_id', user.id)
         .single()
 
       if (error) {
+        console.error('Error fetching vault:', error)
         setError('Vault not found or access denied')
         setLoading(false)
         return
       }
 
+      console.log('Vault found:', data?.id)
       setVault(data)
       setLoading(false)
     }
 
-    if (user) fetchVault()
-  }, [supabase, params.id, user])
+    if (user && vaultId) fetchVault()
+  }, [supabase, vaultId, user])
 
   const handleDecrypt = async () => {
     if (!vault || !decryptKey) return
@@ -122,6 +136,7 @@ export default function VaultPage({ params }: { params: { id: string } }) {
       <div className="min-h-screen bg-stone-950 flex items-center justify-center">
         <div className="text-center">
           <p className="text-rose-400 mb-4">{error}</p>
+          <p className="text-stone-500 text-sm mb-4">Vault ID: {vaultId || 'none'}</p>
           <Link href="/dashboard" className="text-amber-400 hover:text-amber-300">← Back to dashboard</Link>
         </div>
       </div>
