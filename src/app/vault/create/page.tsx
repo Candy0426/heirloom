@@ -155,36 +155,25 @@ export default function CreateVaultPage() {
     setError('')
     
     try {
-      console.log('[DEBUG] Step 1: Getting user...')
       // Get current user
       const { data: { user }, error: authError } = await supabase.auth.getUser()
       
-      if (authError) {
-        console.error('[DEBUG] Auth error:', authError)
-        throw new Error('Auth error: ' + authError.message)
-      }
+      if (authError) throw new Error('Auth error: ' + authError.message)
       
       if (!user) {
-        console.error('[DEBUG] No user found')
         setError('Please sign in to create a vault')
         setLoading(false)
         return
       }
-      console.log('[DEBUG] User found:', user.id.substring(0, 8))
 
-      // Generate encryption key (user must remember this!)
-      console.log('[DEBUG] Step 2: Generating key...')
+      // Generate encryption key
       const keyBytes = crypto.getRandomValues(new Uint8Array(32))
       const encryptionKey = btoa(String.fromCharCode(...keyBytes))
-      console.log('[DEBUG] Key generated:', encryptionKey.substring(0, 10) + '...')
       
       // Encrypt assets
-      console.log('[DEBUG] Step 3: Encrypting assets...')
       const { encrypted, salt } = await encryptData({ assets }, encryptionKey)
-      console.log('[DEBUG] Assets encrypted. Length:', encrypted.length)
       
       // Save to Supabase
-      console.log('[DEBUG] Step 4: Saving to Supabase...')
       const { error: dbError } = await supabase
         .from('vaults')
         .insert({
@@ -193,24 +182,16 @@ export default function CreateVaultPage() {
           encrypted_data: { encrypted, salt }
         })
 
-      if (dbError) {
-        console.error('[DEBUG] Supabase error:', dbError)
-        throw dbError
-      }
-      console.log('[DEBUG] Supabase insert successful!')
+      if (dbError) throw dbError
 
       setSuccess(true)
       setStep(3)
       
-      // Use global variable (persists across re-renders)
       GLOBAL_VAULT_KEY = encryptionKey
       sessionStorage.setItem('heirloom_vault_key', encryptionKey)
       setVaultKey(encryptionKey)
       
-      console.log('[DEBUG] Done! Key set:', GLOBAL_VAULT_KEY.substring(0, 10) + '...')
-      
     } catch (err: any) {
-      console.error('[DEBUG] Caught error:', err)
       setError(err.message || 'Failed to create vault')
     } finally {
       setLoading(false)
