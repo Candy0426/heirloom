@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
 
+// Global variable to persist encryption key across re-renders
+let GLOBAL_VAULT_KEY = ''
+
 interface AssetInput {
   type: string
   name: string
@@ -176,15 +179,12 @@ export default function CreateVaultPage() {
       setSuccess(true)
       setStep(3)
       
-      // Store key in sessionStorage AND update DOM directly (bypass React state issues)
+      // Use global variable (persists across re-renders)
+      GLOBAL_VAULT_KEY = encryptionKey
       sessionStorage.setItem('heirloom_vault_key', encryptionKey)
       setVaultKey(encryptionKey)
       
-      // Force DOM update directly (works even if React state is buggy)
-      setTimeout(() => {
-        const keyDisplay = document.getElementById('vault-key-display')
-        if (keyDisplay) keyDisplay.textContent = encryptionKey
-      }, 0)
+      console.log('GLOBAL_VAULT_KEY set:', GLOBAL_VAULT_KEY.substring(0, 10) + '...') // Debug
       
     } catch (err: any) {
       setError(err.message || 'Failed to create vault')
@@ -308,23 +308,22 @@ export default function CreateVaultPage() {
               <p className="text-stone-400 text-sm mb-3">
                 We cannot recover your vault if you lose this key. Save it in a password manager or write it down.
               </p>
-              <div id="vault-key-display" className="bg-stone-900 rounded-lg p-3 font-mono text-xs text-stone-300 break-all">
-                {vaultKey || 'Key generated'}
+              <div id="vault-key-display" className="bg-stone-900 rounded-lg p-3 font-mono text-xs text-stone-300 break-all min-h-[40px]">
+                {vaultKey || GLOBAL_VAULT_KEY || ''}
               </div>
               
-              {vaultKey && (
+              {(vaultKey || GLOBAL_VAULT_KEY) && (
                 <div className="mt-2 text-xs text-stone-400">
                   <div className="flex items-center gap-1 text-amber-400 mb-1 cursor-pointer select-none" 
                     role="button"
                     tabIndex={0}
                     onClick={() => {
-                      const key = sessionStorage.getItem('heirloom_vault_key')
+                      const key = sessionStorage.getItem('heirloom_vault_key') || GLOBAL_VAULT_KEY
                       if (!key) {
-                        alert('No key in storage. Check console for errors.')
+                        alert('No key found. Please create a new vault.')
                         return
                       }
                       navigator.clipboard?.writeText(key).then(() => alert('Copied!')).catch(() => {
-                        // fallback
                         const ta = document.createElement('textarea')
                         ta.value = key
                         document.body.appendChild(ta)
