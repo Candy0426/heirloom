@@ -7,7 +7,6 @@ import Link from 'next/link'
 interface VaultSummary {
   id: string
   name: string
-  asset_count: number
   created_at: string
 }
 
@@ -48,7 +47,7 @@ export default function DashboardPage() {
 
       const { data, error } = await supabase
         .from('vaults')
-        .select('id, name, asset_count, created_at')
+        .select('id, name, created_at')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
 
@@ -120,7 +119,7 @@ export default function DashboardPage() {
               <div key={v.id} className="bg-stone-900 rounded-xl p-4 sm:p-6 border border-stone-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   <h3 className="font-semibold text-stone-100 truncate">{v.name}</h3>
-                  <p className="text-sm text-stone-500">{v.asset_count} assets · Created {new Date(v.created_at).toLocaleDateString()}</p>
+                  <p className="text-sm text-stone-500">Created {new Date(v.created_at).toLocaleDateString()}</p>
                 </div>
                 <Link href={`/vault/${v.id}`} className="px-4 py-2 rounded-lg bg-stone-800 text-stone-300 hover:bg-stone-700 text-sm whitespace-nowrap">Open</Link>
               </div>
