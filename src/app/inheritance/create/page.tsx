@@ -66,7 +66,8 @@ export default function CreateInheritancePage() {
           beneficiary_name: beneficiaryName,
           wait_days: waitDays,
           status: 'active',
-          last_check_in: new Date().toISOString()
+          last_check_in: new Date().toISOString(),
+          share_part_1: ''
         })
 
       if (dbError) {
