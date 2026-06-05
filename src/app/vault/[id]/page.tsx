@@ -110,9 +110,19 @@ export default function VaultPage() {
   const handleDecrypt = async () => {
     if (!vault || !decryptKey) return
     
-    // Check if vault has valid encrypted data
-    if (!vault.encrypted_data || !vault.encrypted_data.encrypted || !vault.encrypted_data.salt) {
-      setError('This vault is incomplete or corrupted. It may have been created before the fix. Please delete it and create a new one.')
+    // Supabase JSONB might be returned as string, parse it if needed
+    let encryptedData = vault.encrypted_data
+    if (typeof encryptedData === 'string') {
+      try {
+        encryptedData = JSON.parse(encryptedData)
+      } catch (e) {
+        setError('Corrupted encrypted data format')
+        return
+      }
+    }
+    
+    if (!encryptedData || !encryptedData.encrypted || !encryptedData.salt) {
+      setError('This vault has no encrypted data. Please create a new vault.')
       return
     }
     
@@ -120,7 +130,7 @@ export default function VaultPage() {
     setError('')
     
     try {
-      const data = await decryptData(vault.encrypted_data, decryptKey)
+      const data = await decryptData(encryptedData, decryptKey)
       setDecryptedData(data)
     } catch (err: any) {
       setError(err.message || 'Failed to decrypt vault')
