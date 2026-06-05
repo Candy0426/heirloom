@@ -85,6 +85,34 @@ export default function DashboardPage() {
     fetchPlans()
   }, [supabase])
 
+  const handleCheckIn = async (planId: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      
+      const res = await fetch('/api/checkin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: user.id, plan_id: planId })
+      })
+      
+      if (res.ok) {
+        alert('✅ Checked in successfully!')
+        // Refresh plans
+        const { data } = await supabase
+          .from('inheritance_plans')
+          .select('id, beneficiary_email, beneficiary_name, wait_days, status, last_check_in')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+        setPlans(data || [])
+      } else {
+        alert('❌ Check-in failed')
+      }
+    } catch (e) {
+      alert('❌ Check-in failed')
+    }
+  }
+
   const handleLogout = async () => {
     await supabase.auth.signOut()
     window.location.href = '/'
@@ -142,7 +170,10 @@ export default function DashboardPage() {
                     <p className="font-semibold text-stone-100 text-sm">Beneficiary: {p.beneficiary_email}</p>
                     <p className="text-sm text-stone-500">Wait: {p.wait_days} days · Status: <span className="text-emerald-500">{p.status}</span></p>
                   </div>
-                  <button className="px-4 py-2 rounded-lg bg-emerald-500/20 text-emerald-400 text-sm font-semibold whitespace-nowrap">
+                  <button 
+                    onClick={() => handleCheckIn(p.id)}
+                    className="px-4 py-2 rounded-lg bg-emerald-500/20 text-emerald-400 text-sm font-semibold whitespace-nowrap hover:bg-emerald-500/30"
+                  >
                     Check in now
                   </button>
                 </div>
