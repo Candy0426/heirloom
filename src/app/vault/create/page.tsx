@@ -299,7 +299,9 @@ export default function CreateVaultPage() {
 
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <button onClick={() => setStep(1)} className="flex-1 py-3 rounded-lg border border-stone-700 text-stone-300 min-h-[48px] text-base">Back</button>
-              <button onClick={() => setStep(3)} className="flex-1 py-3 rounded-lg bg-amber-500 text-stone-950 font-semibold min-h-[48px] text-base">Encrypt & Save</button>
+              <button onClick={handleCreate} disabled={loading} className="flex-1 py-3 rounded-lg bg-amber-500 text-stone-950 font-semibold min-h-[48px] text-base disabled:opacity-50 disabled:cursor-not-allowed">
+                {loading ? 'Encrypting...' : 'Encrypt & Save'}
+              </button>
             </div>
           </div>
         )}
