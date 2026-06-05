@@ -24,8 +24,25 @@ export default function SignupPage() {
     setError('')
     const { error } = await supabase.auth.signUp({ email, password })
     setLoading(false)
-    if (error) setError(error.message)
-    else alert('Check your email for confirmation!')
+    if (error) {
+      setError(error.message)
+    } else {
+      alert('Check your email for confirmation!')
+      // Send welcome email
+      try {
+        await fetch('/api/email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'welcome',
+            to: email,
+            data: { name: 'there' }
+          })
+        })
+      } catch (e) {
+        console.log('Welcome email failed:', e)
+      }
+    }
   }
 
   return (
