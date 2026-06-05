@@ -176,9 +176,15 @@ export default function CreateVaultPage() {
       setSuccess(true)
       setStep(3)
       
-      // Store key directly in state AND sessionStorage
-      setVaultKey(encryptionKey)
+      // Store key in sessionStorage AND update DOM directly (bypass React state issues)
       sessionStorage.setItem('heirloom_vault_key', encryptionKey)
+      setVaultKey(encryptionKey)
+      
+      // Force DOM update directly (works even if React state is buggy)
+      setTimeout(() => {
+        const keyDisplay = document.getElementById('vault-key-display')
+        if (keyDisplay) keyDisplay.textContent = encryptionKey
+      }, 0)
       
     } catch (err: any) {
       setError(err.message || 'Failed to create vault')
