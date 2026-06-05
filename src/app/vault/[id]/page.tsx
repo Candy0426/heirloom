@@ -110,6 +110,12 @@ export default function VaultPage() {
   const handleDecrypt = async () => {
     if (!vault || !decryptKey) return
     
+    // Check if vault has valid encrypted data
+    if (!vault.encrypted_data || !vault.encrypted_data.encrypted || !vault.encrypted_data.salt) {
+      setError('This vault is incomplete or corrupted. It may have been created before the fix. Please delete it and create a new one.')
+      return
+    }
+    
     setDecrypting(true)
     setError('')
     
@@ -121,6 +127,20 @@ export default function VaultPage() {
     } finally {
       setDecrypting(false)
     }
+  }
+
+  const handleDelete = async () => {
+    if (!vault) return
+    if (!confirm('Are you sure? This will permanently delete this vault.')) return
+    
+    const { error } = await supabase.from('vaults').delete().eq('id', vault.id)
+    
+    if (error) {
+      setError('Failed to delete: ' + error.message)
+      return
+    }
+    
+    window.location.href = '/dashboard'
   }
 
   if (loading) {
@@ -187,6 +207,13 @@ export default function VaultPage() {
               className="w-full py-3 rounded-lg bg-amber-500 text-stone-950 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {decrypting ? 'Decrypting...' : '🔓 Decrypt Vault'}
+            </button>
+            
+            <button
+              onClick={handleDelete}
+              className="w-full py-2 rounded-lg border border-rose-700/50 text-rose-400 hover:text-rose-300 hover:border-rose-700 text-sm"
+            >
+              🗑️ Delete vault
             </button>
           </div>
         ) : (
