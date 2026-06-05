@@ -190,8 +190,7 @@ export default function CreateVaultPage() {
         .insert({
           user_id: user.id,
           name,
-          encrypted_data: { encrypted, salt },
-          asset_count: assets.filter(a => a.name.trim()).length
+          encrypted_data: { encrypted, salt }
         })
 
       if (dbError) {
