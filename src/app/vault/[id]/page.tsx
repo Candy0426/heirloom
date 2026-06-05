@@ -268,6 +268,10 @@ export default function VaultPage() {
             >
               🔒 Lock Vault
             </button>
+            
+            <Link href={`/vault/${vaultId}/edit`} className="w-full py-3 rounded-lg bg-stone-800 text-stone-300 hover:bg-stone-700 text-center block">
+              ✏️ Edit Vault
+            </Link>
           </div>
         )}
       </main>
