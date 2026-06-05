@@ -126,6 +126,14 @@ export default function CreateVaultPage() {
       if (key) setVaultKey(key)
     }
   }, [])
+  
+  // Also restore key when reaching step 3
+  useEffect(() => {
+    if (step === 3 && typeof window !== 'undefined') {
+      const key = sessionStorage.getItem('heirloom_vault_key')
+      if (key) setVaultKey(key)
+    }
+  }, [step])
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL || '',
