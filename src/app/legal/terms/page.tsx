@@ -127,7 +127,7 @@ export default function TermsPage() {
             <h2 className="text-lg font-semibold text-stone-100 mb-3">12. Contact</h2>
             <p className="text-stone-400 text-sm">
               Questions? Contact us at:{' '}
-              <a href="mailto:legal@heirloom.app" className="text-amber-400 hover:text-amber-300">legal@heirloom.app</a>
+              <a href="mailto:legal@ourheirloom.app" className="text-amber-400 hover:text-amber-300">legal@ourheirloom.app</a>
             </p>
           </section>
         </div>

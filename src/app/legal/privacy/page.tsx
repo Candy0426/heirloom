@@ -82,7 +82,7 @@ export default function PrivacyPolicyPage() {
               <li>Object to processing (contact us).</li>
             </ul>
             <p className="text-stone-400 text-sm mt-3">
-              To exercise these rights, email us at: <a href="mailto:privacy@heirloom.app" className="text-amber-400 hover:text-amber-300">privacy@heirloom.app</a>
+              To exercise these rights, email us at: <a href="mailto:privacy@ourheirloom.app" className="text-amber-400 hover:text-amber-300">privacy@ourheirloom.app</a>
             </p>
           </section>
 
@@ -107,7 +107,7 @@ export default function PrivacyPolicyPage() {
             <h2 className="text-lg font-semibold text-stone-100 mb-3">9. Contact</h2>
             <p className="text-stone-400 text-sm">
               Questions? Contact us at:{' '}
-              <a href="mailto:privacy@heirloom.app" className="text-amber-400 hover:text-amber-300">privacy@heirloom.app</a>
+              <a href="mailto:privacy@ourheirloom.app" className="text-amber-400 hover:text-amber-300">privacy@ourheirloom.app</a>
             </p>
           </section>
         </div>

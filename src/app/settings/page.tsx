@@ -52,6 +52,7 @@ export default function SettingsPage() {
       }
 
       await supabase.auth.signOut()
+      setLoading(false)
       window.location.href = '/'
 
     } catch (err: any) {
