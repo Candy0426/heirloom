@@ -93,7 +93,7 @@ export default function SignupPage() {
           onClick={async () => {
             await supabase.auth.signInWithOAuth({
               provider: 'google',
-              options: { redirectTo: 'https://heirloom-ochre.vercel.app/dashboard' }
+              options: { redirectTo: 'https://www.ourheirloom.app/dashboard' }
             })
           }}
           className="w-full py-3 rounded-lg bg-stone-800 border border-stone-700 text-stone-200 font-medium hover:bg-stone-700 flex items-center justify-center gap-3"

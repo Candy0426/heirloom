@@ -80,7 +80,7 @@ export function checkInReminder(name: string, daysUntilTrigger: number): { subje
           <strong>⚠️ Important:</strong> If you don't check in for ${daysUntilTrigger} more days, 
           your inheritance plan may be triggered and your partner will receive access to your vault.
         </div>
-        <a href="https://heirloom-ochre.vercel.app/dashboard" 
+        <a href="https://www.ourheirloom.app/dashboard" 
            style="display: inline-block; background: #d97706; color: white; padding: 12px 24px; 
                   text-decoration: none; border-radius: 6px; margin: 16px 0;">
           Check in now
