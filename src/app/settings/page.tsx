@@ -10,6 +10,15 @@ export default function SettingsPage() {
   const [deleteStep, setDeleteStep] = useState(0)
   const [deleteText, setDeleteText] = useState('')
   const [error, setError] = useState('')
+  
+  // MFA states
+  const [mfaEnabled, setMfaEnabled] = useState(false)
+  const [showMfaSetup, setShowMfaSetup] = useState(false)
+  const [mfaSecret, setMfaSecret] = useState('')
+  const [mfaQrUri, setMfaQrUri] = useState('')
+  const [mfaCode, setMfaCode] = useState('')
+  const [mfaLoading, setMfaLoading] = useState(false)
+  const [mfaError, setMfaError] = useState('')
 
   const supabase = useMemo(() => {
     return createClient(
@@ -23,6 +32,12 @@ export default function SettingsPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { window.location.href = '/auth/login'; return }
       setUser(user)
+      
+      // Check if MFA is enabled
+      const { data: factors } = await supabase.auth.mfa.listFactors()
+      if (factors && factors.totp && factors.totp.length > 0 && factors.totp[0].status === 'verified') {
+        setMfaEnabled(true)
+      }
     }
     checkUser()
   }, [supabase])
@@ -61,6 +76,79 @@ export default function SettingsPage() {
     }
   }
 
+  const handleSetupMFA = async () => {
+    setMfaLoading(true)
+    setMfaError('')
+    try {
+      const { data, error } = await supabase.auth.mfa.enroll({
+        factorType: 'totp'
+      })
+      if (error) throw error
+      if (data && data.totp) {
+        setMfaSecret(data.totp.secret)
+        setMfaQrUri(data.totp.uri)
+        setShowMfaSetup(true)
+      }
+    } catch (err: any) {
+      setMfaError(err.message || 'Failed to setup MFA')
+    }
+    setMfaLoading(false)
+  }
+
+  const handleVerifyMFA = async () => {
+    setMfaLoading(true)
+    setMfaError('')
+    try {
+      const { data: factors } = await supabase.auth.mfa.listFactors()
+      if (!factors || !factors.totp || factors.totp.length === 0) {
+        throw new Error('No MFA factors found')
+      }
+      const totpFactor = factors.totp[0]
+      
+      const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({
+        factorId: totpFactor.id
+      })
+      if (challengeError) throw challengeError
+      if (!challengeData) throw new Error('Failed to create challenge')
+
+      const { error: verifyError } = await supabase.auth.mfa.verify({
+        factorId: totpFactor.id,
+        challengeId: challengeData.id,
+        code: mfaCode
+      })
+      if (verifyError) throw verifyError
+
+      setMfaEnabled(true)
+      setShowMfaSetup(false)
+      setMfaSecret('')
+      setMfaQrUri('')
+      setMfaCode('')
+    } catch (err: any) {
+      setMfaError(err.message || 'Invalid verification code')
+    }
+    setMfaLoading(false)
+  }
+
+  const handleDisableMFA = async () => {
+    setMfaLoading(true)
+    setMfaError('')
+    try {
+      const { data: factors } = await supabase.auth.mfa.listFactors()
+      if (!factors || !factors.totp || factors.totp.length === 0) {
+        throw new Error('No MFA factors found')
+      }
+      const factorIdToRemove = factors.totp[0].id
+      
+      const { error } = await supabase.auth.mfa.unenroll({ factorId: factorIdToRemove })
+      if (error) throw error
+
+      setMfaEnabled(false)
+    } catch (err: any) {
+      setMfaError(err.message || 'Failed to disable MFA')
+    }
+    setMfaLoading(false)
+  }
+
   if (!user) {
     return (
       <div className="min-h-screen bg-stone-950 flex items-center justify-center">
@@ -71,7 +159,6 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-stone-950">
-      {/* Navbar */}
       <nav className="px-4 sm:px-6 py-4 border-b border-stone-800 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <img src="/logo.svg" alt="Heirloom" className="w-8 h-8 rounded-lg" />
@@ -97,6 +184,83 @@ export default function SettingsPage() {
               <label className="text-sm text-stone-500 block mb-1">User ID</label>
               <p className="text-stone-400 text-xs font-mono">{user.id}</p>
             </div>
+          </div>
+        </section>
+
+        {/* Security / MFA */}
+        <section className="space-y-6 mb-12">
+          <h2 className="text-lg font-semibold text-stone-200">Security</h2>
+          <div className="bg-stone-900 rounded-lg border border-stone-800 p-4 sm:p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-stone-200 font-medium">Two-Factor Authentication (2FA)</p>
+                <p className="text-stone-500 text-sm mt-1">
+                  {mfaEnabled 
+                    ? '✅ Your account is protected with an authenticator app (Authy, Google Authenticator, etc.)'
+                    : '🔓 Add an extra layer of security to your account'}
+                </p>
+              </div>
+              <button
+                onClick={mfaEnabled ? handleDisableMFA : handleSetupMFA}
+                disabled={mfaLoading}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors shrink-0 ml-4 ${
+                  mfaEnabled 
+                    ? 'border border-rose-500 text-rose-400 hover:bg-rose-950/30' 
+                    : 'bg-amber-500 text-stone-950 hover:bg-amber-400'
+                } disabled:opacity-50`}
+              >
+                {mfaLoading 
+                  ? '...' 
+                  : mfaEnabled 
+                    ? 'Disable 2FA' 
+                    : 'Enable 2FA'
+                }
+              </button>
+            </div>
+            
+            {mfaError && (
+              <p className="text-rose-400 text-sm">{mfaError}</p>
+            )}
+            
+            {showMfaSetup && !mfaEnabled && (
+              <div className="mt-6 space-y-4 border-t border-stone-800 pt-6">
+                <p className="text-stone-300 text-sm font-medium">Step 1: Scan QR Code</p>
+                <p className="text-stone-500 text-sm">Open Authy, Google Authenticator, or any TOTP app and scan this code:</p>
+                <div className="bg-white rounded-lg p-4 inline-block">
+                  <img 
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(mfaQrUri)}`}
+                    alt="MFA QR Code"
+                    className="w-48 h-48"
+                  />
+                </div>
+                
+                <p className="text-stone-500 text-sm">Or enter this secret manually:</p>
+                <code className="bg-stone-800 px-3 py-2 rounded text-sm font-mono text-stone-300 select-all">
+                  {mfaSecret}
+                </code>
+                
+                <div className="mt-6">
+                  <p className="text-stone-300 text-sm font-medium">Step 2: Verify Code</p>
+                  <div className="flex gap-3 mt-2">
+                    <input
+                      type="text"
+                      value={mfaCode}
+                      onChange={(e) => setMfaCode(e.target.value)}
+                      placeholder="Enter 6-digit code"
+                      maxLength={6}
+                      className="flex-1 px-4 py-3 rounded-lg bg-stone-900 border border-stone-700 text-stone-100 text-base focus:outline-none focus:border-amber-500 transition-colors"
+                    />
+                    <button
+                      onClick={handleVerifyMFA}
+                      disabled={mfaLoading || mfaCode.length !== 6}
+                      className="px-6 py-3 rounded-lg bg-amber-500 text-stone-950 font-medium hover:bg-amber-400 disabled:opacity-50 transition-colors"
+                    >
+                      {mfaLoading ? 'Verifying...' : 'Verify'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </section>
 
