@@ -151,7 +151,6 @@ export default function SettingsPage() {
 
       const { error: verifyError } = await supabase.auth.mfa.verify({
         factorId: totpFactor.id,
-        challengeId: challengeData.id,
         code: mfaCode
       })
       if (verifyError) throw verifyError
