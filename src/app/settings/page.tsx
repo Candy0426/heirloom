@@ -120,6 +120,20 @@ export default function SettingsPage() {
         <section className="space-y-6">
           <h2 className="text-lg font-semibold text-rose-400">Danger Zone</h2>
           <div className="bg-rose-950/20 rounded-lg border border-rose-500/30 p-4 sm:p-6 space-y-4">
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 mb-4">
+              <div className="flex items-start gap-2">
+                <span className="text-amber-400 text-lg shrink-0">⚠️</span>
+                <div>
+                  <p className="text-amber-200 text-sm font-medium mb-1">Important — shares already sent cannot be recalled</p>
+                  <p className="text-stone-400 text-sm">
+                    If you have already sent inheritance key shares via email to your beneficiaries, 
+                    those emails <strong className="text-stone-300">cannot be revoked or deleted</strong> from their inboxes. 
+                    Even after your account is deleted, any shares they have already received will remain with them.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <p className="text-stone-400 text-sm">
               Deleting your account will permanently remove:
             </p>
