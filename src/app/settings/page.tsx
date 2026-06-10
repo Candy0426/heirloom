@@ -33,10 +33,13 @@ export default function SettingsPage() {
       if (!user) { window.location.href = '/auth/login'; return }
       setUser(user)
       
-      // Check if MFA is enabled
+      // Check MFA factors
       const { data: factors } = await supabase.auth.mfa.listFactors()
-      if (factors && factors.totp && factors.totp.length > 0 && factors.totp[0].status === 'verified') {
-        setMfaEnabled(true)
+      if (factors && factors.totp && factors.totp.length > 0) {
+        const factor = factors.totp[0]
+        if (factor.status === 'verified') {
+          setMfaEnabled(true)
+        }
       }
     }
     checkUser()
@@ -77,13 +80,27 @@ export default function SettingsPage() {
   }
 
   const handleSetupMFA = async () => {
+    // Toggle off if already showing
+    if (showMfaSetup) {
+      setShowMfaSetup(false)
+      return
+    }
+    
     setMfaLoading(true)
     setMfaError('')
     try {
       const { data, error } = await supabase.auth.mfa.enroll({
         factorType: 'totp'
       })
-      if (error) throw error
+      if (error) {
+        // If factor already exists but not verified, show setup panel
+        if (error.message?.includes('already exists')) {
+          setShowMfaSetup(true)
+          setMfaLoading(false)
+          return
+        }
+        throw error
+      }
       if (data && data.totp) {
         setMfaSecret(data.totp.secret)
         setMfaQrUri(data.totp.uri)
@@ -92,6 +109,27 @@ export default function SettingsPage() {
     } catch (err: any) {
       setMfaError(err.message || 'Failed to setup MFA')
     }
+    setMfaLoading(false)
+  }
+
+  const handleCancelMFA = async () => {
+    setMfaLoading(true)
+    try {
+      const { data: factors } = await supabase.auth.mfa.listFactors()
+      if (factors && factors.totp && factors.totp.length > 0) {
+        const unverified = factors.totp.find((f: any) => f.status !== 'verified')
+        if (unverified) {
+          await supabase.auth.mfa.unenroll({ factorId: unverified.id })
+        }
+      }
+    } catch (err: any) {
+      // Ignore errors
+    }
+    setShowMfaSetup(false)
+    setMfaSecret('')
+    setMfaQrUri('')
+    setMfaCode('')
+    setMfaError('')
     setMfaLoading(false)
   }
 
@@ -206,14 +244,18 @@ export default function SettingsPage() {
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors shrink-0 ml-4 ${
                   mfaEnabled 
                     ? 'border border-rose-500 text-rose-400 hover:bg-rose-950/30' 
-                    : 'bg-amber-500 text-stone-950 hover:bg-amber-400'
+                    : showMfaSetup
+                      ? 'border border-stone-500 text-stone-400 hover:bg-stone-800'
+                      : 'bg-amber-500 text-stone-950 hover:bg-amber-400'
                 } disabled:opacity-50`}
               >
                 {mfaLoading 
                   ? '...' 
                   : mfaEnabled 
                     ? 'Disable 2FA' 
-                    : 'Enable 2FA'
+                    : showMfaSetup
+                      ? 'Hide Setup'
+                      : 'Enable 2FA'
                 }
               </button>
             </div>
@@ -235,7 +277,7 @@ export default function SettingsPage() {
                 </div>
                 
                 <p className="text-stone-500 text-sm">Or enter this secret manually:</p>
-                <code className="bg-stone-800 px-3 py-2 rounded text-sm font-mono text-stone-300 select-all">
+                <code className="bg-stone-800 px-3 py-2 rounded text-sm font-mono text-stone-300 select-all block w-fit">
                   {mfaSecret}
                 </code>
                 
@@ -258,6 +300,16 @@ export default function SettingsPage() {
                       {mfaLoading ? 'Verifying...' : 'Verify'}
                     </button>
                   </div>
+                </div>
+                
+                <div className="flex gap-3 mt-4">
+                  <button
+                    onClick={handleCancelMFA}
+                    disabled={mfaLoading}
+                    className="flex-1 py-2 rounded-lg border border-stone-600 text-stone-400 hover:bg-stone-800 text-sm transition-colors disabled:opacity-50"
+                  >
+                    {mfaLoading ? '...' : 'Cancel Setup'}
+                  </button>
                 </div>
               </div>
             )}
