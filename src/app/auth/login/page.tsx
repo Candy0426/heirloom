@@ -37,16 +37,12 @@ export default function LoginPage() {
       return
     }
 
-    // Check if MFA is required (aal1 = basic auth, need aal2 for MFA)
-    const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
-    
-    if (aalData?.nextLevel === 'aal2' && aalData.currentLevel === 'aal1') {
-      // MFA required - get factors
-      const { data: factorsData } = await supabase.auth.mfa.listFactors()
-      if (factorsData?.totp && factorsData.totp.length > 0) {
-        const factor = factorsData.totp[0]
-        
-        // Challenge the factor
+    // ALWAYS check if MFA is enabled (client-side enforcement for free tier)
+    const { data: factorsData } = await supabase.auth.mfa.listFactors()
+    if (factorsData?.totp && factorsData.totp.length > 0) {
+      const factor = factorsData.totp[0]
+      if (factor.status === 'verified') {
+        // MFA is enabled — challenge and require code
         const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({
           factorId: factor.id
         })
@@ -67,7 +63,7 @@ export default function LoginPage() {
       }
     }
     
-    // No MFA needed - login successful
+    // No MFA enabled - login successful
     setLoading(false)
     window.location.href = '/dashboard'
   }
