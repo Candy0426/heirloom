@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
-import { sendEmail, checkInReminder } from '@/lib/email'
+import { sendEmail, checkInReminder, inheritanceTriggeredEmail } from '@/lib/email'
 
 export async function POST() {
   try {
@@ -33,10 +33,29 @@ export async function POST() {
       
       // Trigger inheritance if expired
       if (daysRemaining <= 0) {
+        // Mark plan as triggered
         await supabaseAdmin
           .from('inheritance_plans')
           .update({ status: 'triggered', updated_at: now.toISOString() })
           .eq('id', plan.id)
+        
+        // Send notification to beneficiary
+        try {
+          const planName = plan.beneficiary_name || 'Partner'
+          const userName = plan.user_id ? 'your loved one' : 'your loved one'
+          
+          await sendEmail({
+            to: plan.beneficiary_email,
+            ...inheritanceTriggeredEmail(
+              planName,
+              userName,
+              `https://www.ourheirloom.app/access/${plan.id}`,
+              'Use the vault key they shared with you'
+            )
+          })
+        } catch (emailErr) {
+          console.error('Failed to send inheritance email:', emailErr)
+        }
         
         sent++
       }

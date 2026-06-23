@@ -96,11 +96,11 @@ export function checkInReminder(name: string, daysUntilTrigger: number): { subje
 export function inheritanceTriggeredEmail(
   beneficiaryName: string,
   deceasedName: string,
-  vaultLink: string,
-  share2: string
+  accessLink: string,
+  instructions: string
 ): { subject: string; html: string } {
   return {
-    subject: `🔐 Heirloom: ${deceasedName}'s vault access has been granted`,
+    subject: `🔐 Heirloom: Vault access granted`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px; color: #333;">
         <h1 style="color: #d97706;">Dear ${beneficiaryName},</h1>
@@ -109,14 +109,14 @@ export function inheritanceTriggeredEmail(
         <div style="background: #fef3c7; border-left: 4px solid #d97706; padding: 16px; margin: 24px 0;">
           <strong>How to access the vault:</strong>
           <ol>
-            <li>Visit: <a href="${vaultLink}">${vaultLink}</a></li>
-            <li>You will need the second share of the decryption key</li>
-            <li>Your share is: <code style="background: #f3f4f6; padding: 4px 8px; border-radius: 4px;">${share2}</code></li>
-            <li>Combine this with the first share (held by Heirloom) to decrypt the vault</li>
+            <li>Visit: <a href="${accessLink}">${accessLink}</a></li>
+            <li>Enter the vault decryption key that <strong>${deceasedName}</strong> shared with you personally</li>
+            <li>The vault contents will be decrypted in your browser — no data is sent to our servers</li>
           </ol>
         </div>
         <div style="background: #fee2e2; border-left: 4px solid #ef4444; padding: 16px; margin: 24px 0;">
-          <strong>⚠️ Important:</strong> Keep this share secure. Anyone with both shares can access the vault contents.
+          <strong>⚠️ Important:</strong> We do not have access to the vault key. You must have received it directly from ${deceasedName}. 
+          If you do not have the key, the vault contents cannot be recovered.
         </div>
         <p style="margin-top: 30px; font-size: 12px; color: #666;">
           This is an automated message from Heirloom. If you believe this was sent in error, please contact us immediately.
