@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Shield, Clock, Key, ChevronRight, Lock, Fingerprint, Timer, Mail, ArrowRight } from 'lucide-react'
+import { Shield, Clock, Key, ChevronRight, Lock, Fingerprint, Timer, Mail, ArrowRight, Check, X, Zap, Crown, Building2 } from 'lucide-react'
 import { FadeIn, ScaleIn, StaggerContainer, StaggerItem, HoverCard, AnimatedGradient, FloatingParticles } from '@/components/animations'
 
 function MobileNav() {
@@ -31,6 +31,7 @@ function MobileNav() {
 
 export default function LandingPage() {
   const [email, setEmail] = useState('')
+  const [annual, setAnnual] = useState(false)
 
   const handleWaitlist = (e: React.FormEvent) => {
     e.preventDefault()
@@ -206,30 +207,191 @@ export default function LandingPage() {
 
         {/* Pricing */}
         <section id="pricing" className="py-12 sm:py-16 border-t border-stone-800">
-          <h2 className="text-2xl sm:text-3xl font-bold text-stone-100 text-center mb-8 sm:mb-12">Simple pricing</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 max-w-lg mx-auto">
-            <div className="bg-stone-900 rounded-xl p-5 sm:p-6 border border-stone-800">
-              <h3 className="text-xl font-bold text-stone-100 mb-2">Free</h3>
-              <p className="text-3xl font-bold text-amber-500 mb-4">€0</p>
-              <ul className="text-stone-400 space-y-2 text-sm">
-                <li>✓ 1 vault</li>
-                <li>✓ Up to 10 assets</li>
-                <li>✓ 1 beneficiary</li>
-                <li>✓ 90-day wait time</li>
-              </ul>
+          <FadeIn>
+            <div className="text-center mb-8 sm:mb-12">
+              <h2 className="text-2xl sm:text-3xl font-bold text-stone-100 mb-3">Simple, transparent pricing</h2>
+              <p className="text-stone-400 max-w-lg mx-auto">Start free. Upgrade when you're ready. No hidden fees.</p>
             </div>
-            <div className="bg-stone-900 rounded-xl p-5 sm:p-6 border border-amber-500/50">
-              <div className="text-xs font-semibold text-amber-400 uppercase mb-2">Recommended</div>
-              <h3 className="text-xl font-bold text-stone-100 mb-2">Premium</h3>
-              <p className="text-3xl font-bold text-amber-500 mb-4">€3.99/mo</p>
-              <ul className="text-stone-400 space-y-2 text-sm">
-                <li>✓ Unlimited assets</li>
-                <li>✓ File uploads (documents, IDs)</li>
-                <li>✓ 2 beneficiaries</li>
-                <li>✓ 30 or 60-day wait</li>
-                <li>✓ Priority support</li>
-              </ul>
-            </div>
+          </FadeIn>
+
+          {/* Billing toggle */}
+          <div className="flex items-center justify-center gap-3 mb-8 sm:mb-10">
+            <span className="text-sm text-stone-400">Monthly</span>
+            <button
+              onClick={() => setAnnual(!annual)}
+              className={`relative w-14 h-7 rounded-full transition-colors ${annual ? 'bg-amber-500' : 'bg-stone-700'}`}
+            >
+              <motion.div
+                className="absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-stone-950"
+                animate={{ x: annual ? 26 : 0 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              />
+            </button>
+            <span className="text-sm text-stone-400">Annual</span>
+            {annual && (
+              <motion.span
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-full"
+              >
+                Save 25%
+              </motion.span>
+            )}
+          </div>
+
+          <StaggerContainer staggerDelay={0.1} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {/* Free Plan */}
+            <StaggerItem>
+              <div className="bg-stone-900 rounded-2xl p-6 border border-stone-800 hover:border-stone-600 transition-colors h-full flex flex-col">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-stone-800 flex items-center justify-center">
+                    <Shield className="w-5 h-5 text-stone-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-stone-100">Free</h3>
+                    <p className="text-xs text-stone-500">Get started</p>
+                  </div>
+                </div>
+                <div className="mb-6">
+                  <span className="text-4xl font-bold text-stone-100">€0</span>
+                  <span className="text-stone-500 text-sm">/forever</span>
+                </div>
+                <ul className="space-y-3 mb-8 flex-1">
+                  {[
+                    '1 secure vault',
+                    'Up to 10 assets',
+                    '1 beneficiary',
+                    '90-day wait time',
+                    'AES-256 encryption',
+                    'Email reminders',
+                  ].map(f => (
+                    <li key={f} className="flex items-start gap-2 text-sm text-stone-400">
+                      <Check className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
+                      {f}
+                    </li>
+                  ))}
+                  {[
+                    'File uploads',
+                    'Priority support',
+                    'Custom branding',
+                  ].map(f => (
+                    <li key={f} className="flex items-start gap-2 text-sm text-stone-600">
+                      <X className="w-4 h-4 mt-0.5 shrink-0" />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <a
+                  href="/auth/signup"
+                  className="block text-center px-6 py-3 rounded-xl border border-stone-700 text-stone-300 font-semibold hover:bg-stone-800 transition-colors"
+                >
+                  Start for free
+                </a>
+              </div>
+            </StaggerItem>
+
+            {/* Premium Plan */}
+            <StaggerItem>
+              <div className="bg-stone-900 rounded-2xl p-6 border-2 border-amber-500/50 relative h-full flex flex-col">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <span className="bg-amber-500 text-stone-950 text-xs font-bold px-3 py-1 rounded-full">MOST POPULAR</span>
+                </div>
+                <div className="flex items-center gap-2 mb-4 mt-2">
+                  <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center">
+                    <Crown className="w-5 h-5 text-amber-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-stone-100">Premium</h3>
+                    <p className="text-xs text-stone-500">For families</p>
+                  </div>
+                </div>
+                <div className="mb-6">
+                  <span className="text-4xl font-bold text-stone-100">
+                    €{annual ? '2.99' : '3.99'}
+                  </span>
+                  <span className="text-stone-500 text-sm">/month</span>
+                  {annual && (
+                    <p className="text-xs text-stone-500 mt-1">billed as €35.88/year</p>
+                  )}
+                </div>
+                <ul className="space-y-3 mb-8 flex-1">
+                  {[
+                    'Unlimited vaults',
+                    'Unlimited assets',
+                    'File uploads (PDF, images)',
+                    '2 beneficiaries',
+                    '30 or 60-day wait time',
+                    'Priority email support',
+                    'Inheritance planning guide',
+                  ].map(f => (
+                    <li key={f} className="flex items-start gap-2 text-sm text-stone-300">
+                      <Check className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <a
+                  href="/auth/signup"
+                  className="block text-center px-6 py-3 rounded-xl bg-amber-500 text-stone-950 font-semibold hover:bg-amber-400 transition-colors shadow-lg shadow-amber-500/20"
+                >
+                  Get Premium
+                </a>
+              </div>
+            </StaggerItem>
+
+            {/* Family Plan */}
+            <StaggerItem>
+              <div className="bg-stone-900 rounded-2xl p-6 border border-stone-800 hover:border-stone-600 transition-colors h-full flex flex-col">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-stone-800 flex items-center justify-center">
+                    <Building2 className="w-5 h-5 text-stone-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-stone-100">Family</h3>
+                    <p className="text-xs text-stone-500">Up to 5 members</p>
+                  </div>
+                </div>
+                <div className="mb-6">
+                  <span className="text-4xl font-bold text-stone-100">
+                    €{annual ? '7.99' : '9.99'}
+                  </span>
+                  <span className="text-stone-500 text-sm">/month</span>
+                  {annual && (
+                    <p className="text-xs text-stone-500 mt-1">billed as €95.88/year</p>
+                  )}
+                </div>
+                <ul className="space-y-3 mb-8 flex-1">
+                  {[
+                    'Everything in Premium',
+                    '5 family members',
+                    'Shared family vaults',
+                    'Emergency access for all',
+                    'Dedicated support',
+                    'Custom wait periods',
+                    'Account activity log',
+                  ].map(f => (
+                    <li key={f} className="flex items-start gap-2 text-sm text-stone-400">
+                      <Check className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <a
+                  href="/auth/signup"
+                  className="block text-center px-6 py-3 rounded-xl border border-stone-700 text-stone-300 font-semibold hover:bg-stone-800 transition-colors"
+                >
+                  Get Family
+                </a>
+              </div>
+            </StaggerItem>
+          </StaggerContainer>
+
+          {/* Trust note */}
+          <div className="text-center mt-8 sm:mt-10">
+            <p className="text-sm text-stone-500">
+              🔒 All plans include zero-knowledge encryption. We cannot read your data.{' '}
+              <a href="/legal/privacy" className="text-amber-500 hover:underline">Learn more</a>
+            </p>
           </div>
         </section>
 
