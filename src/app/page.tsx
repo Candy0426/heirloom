@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Shield, Clock, Key, ChevronRight, Lock, Fingerprint, Timer, Mail, ArrowRight, Check, X, Zap, Crown, Building2 } from 'lucide-react'
 import { FadeIn, ScaleIn, StaggerContainer, StaggerItem, HoverCard, AnimatedGradient, FloatingParticles } from '@/components/animations'
+import { trackPageView, trackPricingClick } from '@/lib/analytics'
 
 function MobileNav() {
   const [open, setOpen] = useState(false)
@@ -32,6 +33,10 @@ function MobileNav() {
 export default function LandingPage() {
   const [email, setEmail] = useState('')
   const [annual, setAnnual] = useState(false)
+
+  useEffect(() => {
+    trackPageView()
+  }, [])
 
   const handleWaitlist = (e: React.FormEvent) => {
     e.preventDefault()
@@ -284,6 +289,7 @@ export default function LandingPage() {
                 <a
                   href="/auth/signup"
                   className="block text-center px-6 py-3 rounded-xl border border-stone-700 text-stone-300 font-semibold hover:bg-stone-800 transition-colors"
+                  onClick={() => trackPricingClick('free', annual ? 'annual' : 'monthly')}
                 >
                   Start for free
                 </a>
@@ -333,6 +339,7 @@ export default function LandingPage() {
                 <a
                   href="/auth/signup"
                   className="block text-center px-6 py-3 rounded-xl bg-amber-500 text-stone-950 font-semibold hover:bg-amber-400 transition-colors shadow-lg shadow-amber-500/20"
+                  onClick={() => trackPricingClick('premium', annual ? 'annual' : 'monthly')}
                 >
                   Get Premium
                 </a>
@@ -379,6 +386,7 @@ export default function LandingPage() {
                 <a
                   href="/auth/signup"
                   className="block text-center px-6 py-3 rounded-xl border border-stone-700 text-stone-300 font-semibold hover:bg-stone-800 transition-colors"
+                  onClick={() => trackPricingClick('family', annual ? 'annual' : 'monthly')}
                 >
                   Get Family
                 </a>
