@@ -13,7 +13,7 @@ async function initStripe() {
   if (stripe) return stripe
   try {
     const Stripe = (await import(/* webpackIgnore: true */ 'stripe')).default
-    stripe = new Stripe(stripeSecretKey, { apiVersion: '2024-12-18.acacia' })
+    stripe = new Stripe(stripeSecretKey, { apiVersion: '2026-05-27.dahlia' })
     return stripe
   } catch {
     return null
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
 
     switch (event.type) {
       case 'checkout.session.completed': {
-        const session = event.data.object as Stripe.Checkout.Session
+        const session = event.data.object as any
         const userId = session.metadata?.userId
         const subscriptionId = session.subscription as string
 
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
       }
 
       case 'invoice.payment_succeeded': {
-        const invoice = event.data.object as Stripe.Invoice
+        const invoice = event.data.object as any
         const subscriptionId = invoice.subscription as string
         const periodEnd = invoice.lines.data[0]?.period?.end
 
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
 
       case 'customer.subscription.deleted':
       case 'invoice.payment_failed': {
-        const subscription = event.data.object as Stripe.Subscription
+        const subscription = event.data.object as any
         await supabase.from('subscriptions')
           .update({ status: 'canceled' })
           .eq('stripe_subscription_id', subscription.id)
