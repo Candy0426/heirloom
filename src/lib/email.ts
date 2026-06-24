@@ -1,6 +1,8 @@
 // Email service using Resend API
 const RESEND_API_KEY = process.env.RESEND_API_KEY || ''
-const FROM_EMAIL = 'Heirloom <onboarding@resend.dev>'
+// IMPORTANT: To send from custom domain, verify it in Resend dashboard first
+// Requires DNS records in GoDaddy: _dmarc, resend._domainkey, resend._bounces
+const FROM_EMAIL = process.env.FROM_EMAIL || 'Heirloom <onboarding@ourheirloom.app>'
 
 interface EmailData {
   to: string

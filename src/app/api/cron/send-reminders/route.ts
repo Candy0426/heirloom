@@ -2,8 +2,13 @@ import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { sendEmail, checkInReminder, inheritanceTriggeredEmail } from '@/lib/email'
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
+    // Verify cron secret to prevent unauthorized access
+    const authHeader = request.headers.get('authorization')
+    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     // Find plans where last check-in is approaching trigger
     const { data: plans, error } = await supabaseAdmin
       .from('inheritance_plans')
