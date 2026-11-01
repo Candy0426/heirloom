@@ -1,30 +1,44 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { supabaseAdmin } from '@/lib/supabase'
+import { getRequestUser } from '@/lib/auth'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB, matches the client-side limit
 
 export async function POST(request: Request) {
   try {
+    const user = await getRequestUser(request)
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const formData = await request.formData()
     const file = formData.get('file') as File
     const vaultId = formData.get('vaultId') as string
-    
+
     if (!file || !vaultId) {
       return NextResponse.json({ error: 'Missing file or vaultId' }, { status: 400 })
     }
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json({ error: 'File too large (max 10MB)' }, { status: 413 })
+    }
 
-    // Create admin client for storage operations
-    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
-      auth: { autoRefreshToken: false, persistSession: false }
-    })
+    // The vault must belong to the caller
+    const { data: vault } = await supabaseAdmin
+      .from('vaults')
+      .select('id')
+      .eq('id', vaultId)
+      .eq('user_id', user.id)
+      .single()
 
-    // Generate unique filename
-    const timestamp = Date.now()
-    const filename = `vaults/${vaultId}/${timestamp}_${file.name}`
+    if (!vault) {
+      return NextResponse.json({ error: 'Vault not found' }, { status: 404 })
+    }
 
-    // Upload to Supabase Storage
-    const { data, error } = await supabaseAdmin.storage
+    // Random filename: doesn't leak the original name and can't escape the vault folder
+    const filename = `vaults/${vault.id}/${crypto.randomUUID()}.enc`
+
+    // Upload to Supabase Storage (the bucket should be private; no public URL is returned)
+    const { error } = await supabaseAdmin.storage
       .from('heirloom-files')
       .upload(filename, file, {
         contentType: 'application/octet-stream',
@@ -33,19 +47,13 @@ export async function POST(request: Request) {
 
     if (error) throw error
 
-    // Get public URL
-    const { data: { publicUrl } } = supabaseAdmin.storage
-      .from('heirloom-files')
-      .getPublicUrl(filename)
-
-    return NextResponse.json({ 
-      success: true, 
-      url: publicUrl,
+    return NextResponse.json({
+      success: true,
       path: filename
     })
 
-  } catch (err: any) {
+  } catch (err) {
     console.error('Upload error:', err)
-    return NextResponse.json({ error: err.message || 'Upload failed' }, { status: 500 })
+    return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
   }
 }

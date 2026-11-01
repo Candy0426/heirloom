@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
+import { authFetch } from '@/lib/authFetch'
 
 export default function CreateInheritancePage() {
   const [beneficiaryEmail, setBeneficiaryEmail] = useState('')
@@ -57,7 +58,7 @@ export default function CreateInheritancePage() {
       }
 
       // Create the inheritance plan
-      const { error: dbError } = await supabase
+      const { data: plan, error: dbError } = await supabase
         .from('inheritance_plans')
         .insert({
           user_id: user.id,
@@ -69,6 +70,8 @@ export default function CreateInheritancePage() {
           last_check_in: new Date().toISOString(),
           share_part_1: ''
         })
+        .select('id')
+        .single()
 
       if (dbError) {
         throw dbError
@@ -78,14 +81,10 @@ export default function CreateInheritancePage() {
 
       // Optionally send welcome email
       try {
-        await fetch('/api/email', {
+        await authFetch(supabase, '/api/email', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            type: 'welcome',
-            to: beneficiaryEmail,
-            data: { name: beneficiaryName || 'Partner' }
-          })
+          body: JSON.stringify({ type: 'beneficiary-welcome', planId: plan.id })
         })
       } catch (e) {
         console.log('Email send failed (expected in dev):', e)

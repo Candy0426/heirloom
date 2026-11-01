@@ -1,23 +1,19 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || '',
-  { auth: { autoRefreshToken: false, persistSession: false } }
-)
+import { supabaseAdmin } from '@/lib/supabase'
+import { getRequestUser } from '@/lib/auth'
 
 export async function POST(request: Request) {
   try {
-    const { userId } = await request.json()
-
-    if (!userId) {
-      return NextResponse.json({ error: 'User ID required' }, { status: 400 })
+    // Only the signed-in user can delete their own account
+    const user = await getRequestUser(request)
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+    const userId = user.id
 
-    // Delete user's vaults
+    // Delete user's check-ins
     await supabaseAdmin
-      .from('vaults')
+      .from('check_ins')
       .delete()
       .eq('user_id', userId)
 
@@ -27,13 +23,13 @@ export async function POST(request: Request) {
       .delete()
       .eq('user_id', userId)
 
-    // Delete user's check-ins
+    // Delete user's vaults
     await supabaseAdmin
-      .from('check_ins')
+      .from('vaults')
       .delete()
       .eq('user_id', userId)
 
-    // Delete user auth account (this also cascades to user data if configured)
+    // Delete user auth account
     const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(userId)
 
     if (authError) {
@@ -42,11 +38,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true })
 
-  } catch (err: any) {
+  } catch (err) {
     console.error('Delete account error:', err)
-    return NextResponse.json(
-      { error: err.message || 'Failed to delete account' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to delete account' }, { status: 500 })
   }
 }

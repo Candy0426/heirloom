@@ -1,7 +1,14 @@
 'use client'
 
 import { useState, useCallback } from 'react'
+import { createClient } from '@supabase/supabase-js'
 import { encryptFile } from '@/utils/crypto'
+import { authFetch } from '@/lib/authFetch'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+)
 
 interface FileUploadProps {
   vaultId: string
@@ -47,15 +54,16 @@ export default function FileUpload({ vaultId, encryptionKey, onUploadComplete }:
         formData.append('file', encryptedBlob, `${file.name}.encrypted`)
         formData.append('vaultId', vaultId)
 
-        const response = await fetch('/api/upload', {
+        const response = await authFetch(supabase, '/api/upload', {
           method: 'POST',
           body: formData,
         })
 
         if (!response.ok) throw new Error(`Upload failed for ${file.name}`)
-        
-        const { url } = await response.json()
-        uploadedUrls.push(url)
+
+        // Storage path of the encrypted file (the bucket is private, there is no public URL)
+        const { path } = await response.json()
+        uploadedUrls.push(path)
         
         setProgress(Math.round(((i + 1) / files.length) * 100))
       }

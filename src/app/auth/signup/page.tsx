@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
+import { authFetch } from '@/lib/authFetch'
 
 export default function SignupPage() {
   const [email, setEmail] = useState('')
@@ -22,25 +23,24 @@ export default function SignupPage() {
     e.preventDefault()
     setLoading(true)
     setError('')
-    const { error } = await supabase.auth.signUp({ email, password })
+    const { data, error } = await supabase.auth.signUp({ email, password })
     setLoading(false)
     if (error) {
       setError(error.message)
     } else {
       alert('Check your email for confirmation!')
-      // Send welcome email
-      try {
-        await fetch('/api/email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            type: 'welcome',
-            to: email,
-            data: { name: 'there' }
+      // Send welcome email. Only possible when signup returns a session (email confirmation off);
+      // otherwise Supabase's own confirmation email is the first contact.
+      if (data.session) {
+        try {
+          await authFetch(supabase, '/api/email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'welcome' })
           })
-        })
-      } catch (e) {
-        console.log('Welcome email failed:', e)
+        } catch (e) {
+          console.log('Welcome email failed:', e)
+        }
       }
     }
   }

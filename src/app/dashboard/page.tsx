@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
+import { authFetch } from '@/lib/authFetch'
 
 interface VaultSummary {
   id: string
@@ -90,10 +91,10 @@ export default function DashboardPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
       
-      const res = await fetch('/api/checkin', {
+      const res = await authFetch(supabase, '/api/checkin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: user.id, plan_id: planId })
+        body: JSON.stringify({ plan_id: planId })
       })
       
       if (res.ok) {

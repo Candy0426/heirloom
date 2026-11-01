@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
+import { authFetch } from '@/lib/authFetch'
 
 export default function SettingsPage() {
   const [user, setUser] = useState<any>(null)
@@ -58,10 +59,8 @@ export default function SettingsPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 
-      const response = await fetch('/api/delete-account', {
+      const response = await authFetch(supabase, '/api/delete-account', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id })
       })
 
       if (!response.ok) {
