@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
+import { openShare } from '@/lib/shareCrypto'
 
 export async function GET(
   request: Request,
@@ -15,7 +16,7 @@ export async function GET(
     // Fetch the plan with vault data
     const { data: plan, error: planError } = await supabaseAdmin
       .from('inheritance_plans')
-      .select('*, vaults(id, name, encrypted_data, created_at)')
+      .select('id, user_id, status, beneficiary_name, share_part_1, vaults(id, name, encrypted_data, created_at)')
       .eq('id', planId)
       .single()
 
@@ -31,21 +32,30 @@ export async function GET(
       )
     }
 
-    // Return vault data (still encrypted — beneficiary must have the key)
+    const vault = Array.isArray(plan.vaults) ? plan.vaults[0] : plan.vaults
+    if (!vault) {
+      return NextResponse.json({ error: 'Vault no longer exists' }, { status: 404 })
+    }
+
+    const { data: owner } = await supabaseAdmin.auth.admin.getUserById(plan.user_id)
+
+    // Vault data stays encrypted. The platform's key share is released now; the beneficiary
+    // combines it with their key card in the browser. Legacy plans have no share (null).
     return NextResponse.json({
       vault: {
-        id: plan.vaults.id,
-        name: plan.vaults.name,
-        encrypted_data: plan.vaults.encrypted_data,
-        created_at: plan.vaults.created_at,
+        id: vault.id,
+        name: vault.name,
+        encrypted_data: vault.encrypted_data,
+        created_at: vault.created_at,
       },
       beneficiary: {
         name: plan.beneficiary_name,
-        email: plan.beneficiary_email,
       },
-      triggered_at: plan.updated_at,
+      owner_email: owner?.user?.email || null,
+      server_share: openShare(plan.share_part_1),
     })
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+  } catch (err) {
+    console.error('Access error:', err)
+    return NextResponse.json({ error: 'Failed to load vault' }, { status: 500 })
   }
 }

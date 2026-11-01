@@ -175,7 +175,12 @@ export default function DashboardPage() {
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold text-stone-100 text-sm">Beneficiary: {p.beneficiary_email}</p>
-                    <p className="text-sm text-stone-500">Wait: {p.wait_days} days · Status: <span className="text-emerald-500">{p.status}</span></p>
+                    <p className="text-sm text-stone-500">
+                      Wait: {p.wait_days} days · Status: <span className={p.status === 'active' ? 'text-emerald-500' : 'text-rose-400'}>{p.status}</span>
+                      {p.status === 'active' && p.last_check_in && (
+                        <> · {Math.max(0, p.wait_days - Math.floor((Date.now() - new Date(p.last_check_in).getTime()) / 86400000))} days left</>
+                      )}
+                    </p>
                   </div>
                   <button 
                     onClick={() => handleCheckIn(p.id)}

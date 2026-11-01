@@ -45,13 +45,31 @@ export async function sendEmail({ to, subject, html, text }: EmailData): Promise
   }
 }
 
+// Escape user-provided values before putting them in email HTML
+function esc(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://www.ourheirloom.app'
+
+const wrap = (body: string, footer: string) => `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px; color: #333;">
+        ${body}
+        <p style="margin-top: 30px; font-size: 12px; color: #666;">${footer}</p>
+      </div>
+    `
+
 // Email templates
 export function welcomeEmail(name: string): { subject: string; html: string } {
   return {
     subject: 'Welcome to Heirloom — Your Digital Legacy is Secure',
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px; color: #333;">
-        <h1 style="color: #d97706; margin-bottom: 20px;">Welcome to Heirloom, ${name}!</h1>
+    html: wrap(`
+        <h1 style="color: #d97706; margin-bottom: 20px;">Welcome to Heirloom, ${esc(name)}!</h1>
         <p>You've taken an important step to protect your digital assets for your loved ones.</p>
         <div style="background: #fef3c7; border-left: 4px solid #d97706; padding: 16px; margin: 24px 0;">
           <strong>Next steps:</strong>
@@ -59,71 +77,92 @@ export function welcomeEmail(name: string): { subject: string; html: string } {
             <li>Create your first vault</li>
             <li>Add important documents and credentials</li>
             <li>Set up an inheritance plan with your partner</li>
-            <li>Check in weekly to keep your plan active</li>
+            <li>Check in regularly to keep your plan active</li>
           </ol>
         </div>
-        <p>Your data is encrypted with AES-256-GCM. Even we can't access it.</p>
-        <p style="margin-top: 30px; font-size: 12px; color: #666;">
-          This is an automated message from Heirloom. Please do not reply.
-        </p>
-      </div>
-    `,
+        <p>Your data is encrypted with AES-256-GCM. Even we can't access it.</p>`,
+      'This is an automated message from Heirloom. Please do not reply.'),
   }
 }
 
-export function checkInReminder(name: string, daysUntilTrigger: number): { subject: string; html: string } {
+// Sent to the beneficiary when a plan naming them is created
+export function beneficiaryInviteEmail(beneficiaryName: string, ownerEmail: string): { subject: string; html: string } {
   return {
-    subject: `⏰ Heirloom: Check-in reminder (${daysUntilTrigger} days remaining)`,
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px; color: #333;">
-        <h1 style="color: #d97706;">Hi ${name},</h1>
-        <p>This is your weekly reminder to check in to Heirloom.</p>
-        <div style="background: #fee2e2; border-left: 4px solid #ef4444; padding: 16px; margin: 24px 0;">
-          <strong>⚠️ Important:</strong> If you don't check in for ${daysUntilTrigger} more days, 
-          your inheritance plan may be triggered and your partner will receive access to your vault.
+    subject: `${ownerEmail} named you as their Heirloom beneficiary`,
+    html: wrap(`
+        <h1 style="color: #d97706;">Hi ${esc(beneficiaryName)},</h1>
+        <p><strong>${esc(ownerEmail)}</strong> has set up an Heirloom inheritance plan and named you as the person
+        who should receive their important information if something ever happens to them.</p>
+        <div style="background: #fef3c7; border-left: 4px solid #d97706; padding: 16px; margin: 24px 0;">
+          <strong>What you need to do:</strong>
+          <ol>
+            <li>${esc(ownerEmail)} will give you a <strong>Heirloom key card</strong> — a printed or written code.</li>
+            <li>Keep it somewhere safe. You will need it to open the vault.</li>
+            <li>That's it. There is nothing else to do now.</li>
+          </ol>
         </div>
-        <a href="https://www.ourheirloom.app/dashboard" 
-           style="display: inline-block; background: #d97706; color: white; padding: 12px 24px; 
+        <p>Only if they stop checking in for the waiting period will we email you a link. The vault can only be
+        opened with your key card together with the part we hold — neither of us can open it alone.</p>`,
+      'This is an automated message from Heirloom. If you don\'t know this person, you can ignore this email.'),
+  }
+}
+
+// Sent to the owner as the deadline approaches
+export function checkInReminder(daysUntilTrigger: number, beneficiaryName: string): { subject: string; html: string } {
+  return {
+    subject: `⏰ Heirloom: please check in (${daysUntilTrigger} day${daysUntilTrigger === 1 ? '' : 's'} left)`,
+    html: wrap(`
+        <h1 style="color: #d97706;">Time to check in</h1>
+        <p>You haven't checked in to Heirloom for a while.</p>
+        <div style="background: #fee2e2; border-left: 4px solid #ef4444; padding: 16px; margin: 24px 0;">
+          <strong>⚠️ Important:</strong> If you don't check in within <strong>${daysUntilTrigger}
+          day${daysUntilTrigger === 1 ? '' : 's'}</strong>, your inheritance plan will be triggered and
+          ${esc(beneficiaryName)} will receive access to your vault.
+        </div>
+        <a href="${APP_URL}/dashboard"
+           style="display: inline-block; background: #d97706; color: white; padding: 12px 24px;
                   text-decoration: none; border-radius: 6px; margin: 16px 0;">
           Check in now
-        </a>
-        <p style="margin-top: 30px; font-size: 12px; color: #666;">
-          This is an automated reminder from Heirloom. Please do not reply.
-        </p>
-      </div>
-    `,
+        </a>`,
+      'This is an automated reminder from Heirloom. Please do not reply.'),
   }
 }
 
+// Sent to the beneficiary when the plan triggers
 export function inheritanceTriggeredEmail(
   beneficiaryName: string,
-  deceasedName: string,
-  accessLink: string,
-  instructions: string
+  ownerEmail: string,
+  waitDays: number,
+  accessLink: string
 ): { subject: string; html: string } {
   return {
-    subject: `🔐 Heirloom: Vault access granted`,
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px; color: #333;">
-        <h1 style="color: #d97706;">Dear ${beneficiaryName},</h1>
-        <p>We are reaching out with important information regarding <strong>${deceasedName}</strong>'s digital assets.</p>
-        <p>As their designated beneficiary, you now have access to their encrypted vault through Heirloom.</p>
+    subject: `🔐 Heirloom: you now have access to ${ownerEmail}'s vault`,
+    html: wrap(`
+        <h1 style="color: #d97706;">Dear ${esc(beneficiaryName)},</h1>
+        <p><strong>${esc(ownerEmail)}</strong> named you as their beneficiary on Heirloom. They have not checked in
+        for ${waitDays} days, so, as they asked, their vault is now available to you.</p>
         <div style="background: #fef3c7; border-left: 4px solid #d97706; padding: 16px; margin: 24px 0;">
-          <strong>How to access the vault:</strong>
+          <strong>How to open the vault:</strong>
           <ol>
-            <li>Visit: <a href="${accessLink}">${accessLink}</a></li>
-            <li>Enter the vault decryption key that <strong>${deceasedName}</strong> shared with you personally</li>
-            <li>The vault contents will be decrypted in your browser — no data is sent to our servers</li>
+            <li>Find the <strong>Heirloom key card</strong> ${esc(ownerEmail)} gave you.</li>
+            <li>Open: <a href="${accessLink}">${accessLink}</a></li>
+            <li>Type the code from the key card. The vault is decrypted in your browser only.</li>
           </ol>
         </div>
-        <div style="background: #fee2e2; border-left: 4px solid #ef4444; padding: 16px; margin: 24px 0;">
-          <strong>⚠️ Important:</strong> We do not have access to the vault key. You must have received it directly from ${deceasedName}. 
-          If you do not have the key, the vault contents cannot be recovered.
-        </div>
-        <p style="margin-top: 30px; font-size: 12px; color: #666;">
-          This is an automated message from Heirloom. If you believe this was sent in error, please contact us immediately.
-        </p>
-      </div>
-    `,
+        <p>We do not hold the full key and cannot open the vault without your key card.</p>`,
+      'This is an automated message from Heirloom. If you believe this was sent in error, please contact us immediately.'),
+  }
+}
+
+// Sent to the owner when their plan triggers, in case it was a mistake
+export function ownerTriggeredNotice(beneficiaryName: string, waitDays: number): { subject: string; html: string } {
+  return {
+    subject: '🔐 Heirloom: your inheritance plan was triggered',
+    html: wrap(`
+        <h1 style="color: #d97706;">Your inheritance plan was triggered</h1>
+        <p>You did not check in for ${waitDays} days, so ${esc(beneficiaryName)} has been sent access to your vault,
+        as you requested.</p>
+        <p>If this was a mistake, please contact us right away and consider changing the information in your vault.</p>`,
+      'This is an automated message from Heirloom.'),
   }
 }

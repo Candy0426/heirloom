@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { getRequestUser } from '@/lib/auth'
-import { sendEmail, welcomeEmail } from '@/lib/email'
+import { sendEmail, welcomeEmail, beneficiaryInviteEmail } from '@/lib/email'
 
 // Client-triggered emails only. Recipients are always resolved server-side,
 // never taken from the request, so this can't be used as an open relay.
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
           return NextResponse.json({ error: 'Plan not found' }, { status: 404 })
         }
         to = plan.beneficiary_email
-        emailData = welcomeEmail(plan.beneficiary_name || 'Partner')
+        emailData = beneficiaryInviteEmail(plan.beneficiary_name || 'there', user.email)
         break
       }
       default:

@@ -3,46 +3,13 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
+import { decryptVault, combineVaultKey } from '@/utils/vaultKeys'
 
 interface Vault {
   id: string
   name: string
-  encrypted_data: { encrypted: string; salt: string }
+  encrypted_data: unknown
   created_at: string
-}
-
-async function decryptVaultData(encryptedData: { encrypted: string; salt: string }, key: string): Promise<any> {
-  try {
-    const combined = Uint8Array.from(atob(encryptedData.encrypted), c => c.charCodeAt(0))
-    const salt = Uint8Array.from(atob(encryptedData.salt), c => c.charCodeAt(0))
-    
-    const iv = combined.slice(16, 28)
-    const ciphertext = combined.slice(28)
-    
-    const encoder = new TextEncoder()
-    const keyMaterial = await crypto.subtle.importKey(
-      'raw', encoder.encode(key), 'PBKDF2', false, ['deriveBits', 'deriveKey']
-    )
-    
-    const cryptoKey = await crypto.subtle.deriveKey(
-      { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
-      keyMaterial,
-      { name: 'AES-GCM', length: 256 },
-      false,
-      ['decrypt']
-    )
-    
-    const decrypted = await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv },
-      cryptoKey,
-      ciphertext
-    )
-    
-    const decoder = new TextDecoder()
-    return JSON.parse(decoder.decode(decrypted))
-  } catch (e) {
-    throw new Error('Invalid decryption key. The data could not be decrypted.')
-  }
 }
 
 export default function AccessPage() {
@@ -55,7 +22,8 @@ export default function AccessPage() {
   
   const [vault, setVault] = useState<Vault | null>(null)
   const [beneficiaryName, setBeneficiaryName] = useState('')
-  const [deceasedName, setDeceasedName] = useState('')
+  const [ownerName, setOwnerName] = useState('')
+  const [serverShare, setServerShare] = useState<string | null>(null)
   
   const [decryptKey, setDecryptKey] = useState('')
   const [decrypting, setDecrypting] = useState(false)
@@ -85,7 +53,8 @@ export default function AccessPage() {
 
         setVault(data.vault)
         setBeneficiaryName(data.beneficiary.name)
-        setDeceasedName(data.deceased_name || 'your loved one')
+        setOwnerName(data.owner_email || 'your loved one')
+        setServerShare(data.server_share)
         setLoading(false)
       } catch (err: any) {
         setError(err.message || 'Failed to load')
@@ -103,7 +72,10 @@ export default function AccessPage() {
     setDecryptError('')
     
     try {
-      const decrypted = await decryptVaultData(vault.encrypted_data, decryptKey.trim())
+      // New plans: combine our released share with the beneficiary's key card.
+      // Legacy plans (no server share): the beneficiary has the full vault key.
+      const key = serverShare ? combineVaultKey(serverShare, decryptKey) : decryptKey.trim()
+      const decrypted = await decryptVault(vault.encrypted_data, key)
       setDecryptedData(decrypted)
     } catch (err: any) {
       setDecryptError(err.message || 'Decryption failed')
@@ -250,18 +222,20 @@ export default function AccessPage() {
           </div>
           <h1 className="text-2xl font-bold text-stone-100">Vault Access Granted</h1>
           <p className="text-stone-400">
-            {beneficiaryName}, you have been granted access to {deceasedName}'s vault. 
-            Enter the decryption key they shared with you to view the contents.
+            {beneficiaryName ? `${beneficiaryName}, you` : 'You'} have been granted access to {ownerName}'s vault.{' '}
+            {serverShare
+              ? 'Enter the code from the Heirloom key card they gave you.'
+              : 'Enter the vault key they shared with you to view the contents.'}
           </p>
         </div>
 
         <div className="bg-stone-900 rounded-xl p-6 border border-stone-800 space-y-4">
           <div>
-            <label className="block text-sm text-stone-300 mb-2">Decryption Key</label>
+            <label className="block text-sm text-stone-300 mb-2">{serverShare ? 'Key card code' : 'Vault key'}</label>
             <textarea
               value={decryptKey}
               onChange={(e) => setDecryptKey(e.target.value)}
-              placeholder="Paste the vault key here..."
+              placeholder={serverShare ? 'XXXX-XXXX-XXXX-…' : 'Paste the vault key here...'}
               rows={3}
               className="w-full px-4 py-3 rounded-lg bg-stone-800 border border-stone-700 text-stone-100 text-sm font-mono min-h-[80px]"
             />
